@@ -1,11 +1,11 @@
 #include "pilha.h"
-#include "item.h"
+#include "hist.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
 typedef struct no{
-    ITEM* item;
+    HIST* hist;
     NO* anterior;
 }NO;
 
@@ -23,7 +23,7 @@ PILHA* pilha_criar(void){
     return temp;
 }
 
-PILHA* pilha_empilhar(PILHA* pilha, ITEM* item){
+PILHA* pilha_empilhar(PILHA* pilha, HIST* hist){
     if(pilha != NULL){
         
     }
