@@ -23,10 +23,24 @@ PILHA* pilha_criar(void){
     return temp;
 }
 
+void pilha_apagar(PILHA **pilha);
+    
+PILHA* pilha_inserir(HIST* hist);
+    
+bool pilha_vazia(PILHA *pilha);
+    
+bool pilha_cheia(PILHA *pilha);
+    
+int pilha_tamanho(PILHA *pilha);
+    
+HIST *pilha_topo(PILHA *pilha);
+
 PILHA* pilha_empilhar(PILHA* pilha, HIST* hist){
     if(pilha != NULL){
         
     }
 }
 
+HIST *pilha_desempilhar(PILHA *pilha);
 
+void pilha_print(PILHA *p);
