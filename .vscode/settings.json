@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "TEM.C": "cpp"
+        "TEM.C": "cpp",
+        "stdbool.h": "c"
     }
 }
