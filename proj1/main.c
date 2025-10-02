@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include "hist.h"
 #include "pilha.h"
+#include "paciente.h"
+#include "triagem.h"
 
 void menu(void){
     printf("1. Registrar paciente\n");
@@ -15,15 +17,48 @@ void menu(void){
     printf("9. Sair\n");
 }
 
-void registrar(){
+void registrar(LISTA* l, FILA* f) {
+    printf("Qual o ID do usuário?\n");
+    int ID;
+    scanf("%d", &ID);
 
+    // Verifica se já existe paciente com esse ID
+    if (LISTA_busca(l, ID) != NULL) {
+        printf("Erro: ID já cadastrado!\n");
+        return;
+    }
+
+    // Cria novo paciente
+    PACIENTE* paciente = PACIENTE_criar(ID);
+    if (paciente == NULL) {
+        printf("Erro ao criar paciente!\n");
+        return;
+    }
+
+    // Insere paciente na lista
+    if (!LISTA_inserir(l, paciente)) {
+        printf("Erro ao inserir paciente no sistema!\n");
+        return;
+    }
+    printf("Paciente cadastrado no sistema.\n");
+
+    // Insere paciente na fila
+    if (!FILA_inserir(f, paciente)) {
+        printf("Erro: fila de espera cheia!\n");
+        return;
+    }
+    printf("Paciente inserido na fila de espera.\n");
 }
+
 
 void obito(){
 
 }
 
 void adicionar_procedimento(){
+    printf("Qual o ID do paciente que terá um procedimento adicionado?\n");
+    int ID;
+    scanf("%d", &ID);
 
 }
 
@@ -52,14 +87,14 @@ int main(){
         int acao;
         scanf("%d", &acao);
         switch(acao){
-            case 1: registrar(); break;
-            case 2: obito(); break;
-            case 3: adicionar_procedimento(); break;
-            case 4: desfazer_procedimento(); break;
-            case 5: atender(); break;
-            case 6: mostrar_fila(); break;
-            case 7: imprimir_historico(); break;
-            case 8: menu(); break;
+            case 1: registrar(); break; // Pedro
+            case 2: obito(); break; // Mafer
+            case 3: adicionar_procedimento(); break; // Pedro
+            case 4: desfazer_procedimento(); break; // Pedro
+            case 5: atender(); break; // Clara
+            case 6: mostrar_fila(); break; // Clara
+            case 7: imprimir_historico(); break; // Mafer
+            case 8: menu(); break; // Feito
             case 9: flag = 1; break;
             default: printf("Comando não encontrado, digite um número de 1 a 9\n");
         }
