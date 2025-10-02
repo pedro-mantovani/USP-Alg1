@@ -15,6 +15,12 @@
 	bool LISTA_vazia(LISTA *lista); //sim 
 	bool LISTA_cheia(LISTA *lista); //sim 
 	void LISTA_imprimir(LISTA *lista); //sim
+    int LISTA_id_fim(LISTA *lista); 
+
+
+
+
+
 
 #endif 
 

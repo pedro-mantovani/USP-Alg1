@@ -94,8 +94,6 @@ PACIENTE *LISTA_busca(LISTA *lista, int id){
 }
 
 
-
-
 PACIENTE *LISTA_remover_inicio(LISTA *lista){
     if(lista && !LISTA_vazia(lista)){
         NO *aux = lista->sentinela->proximo;
@@ -156,7 +154,13 @@ void LISTA_imprimir(LISTA *lista){
         for(int i = 0; i < lista->tamanho; i++){
             printf("%d \n", PACIENTE_get_ID(p->paciente));
             p = p->proximo;
-
         } printf("\n"); 
     }
+}
+
+int LISTA_ID_fim(LISTA *lista){
+    if(lista && !lista_vazia(lista)){
+        int id = PACIENTE_get_ID(lista->fim->paciente); 
+        return id;
+    } else return -1; 
 }
