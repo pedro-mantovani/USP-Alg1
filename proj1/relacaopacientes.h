@@ -4,22 +4,18 @@
     #include <stdbool.h>
     #include "paciente.h"
 
+    typedef struct lista_ LISTA; //sim
+    LISTA *LISTA_criar(); //sim
+	bool LISTA_inserir(LISTA *lista, PACIENTE *paciente); //sim 
+	PACIENTE *LISTA_remover(LISTA *lista, int chave);  //sim
+	PACIENTE *LISTA_remover_inicio(LISTA *lista);  //sim 
+    PACIENTE *LISTA_busca(LISTA *lista, int chave);  
+	bool LISTA_apagar(LISTA **lista); //sim 
+	int LISTA_tamanho(LISTA *lista); //sim
+	bool LISTA_vazia(LISTA *lista); //sim 
+	bool LISTA_cheia(LISTA *lista); //sim 
+	void LISTA_imprimir(LISTA *lista); //sim
 
-    typedef struct relacao_ RELACAO; 
-    RELACAO *relacao_criar();
-    bool relacao_paciente_inserir(RELACAO *r, PACIENTE *paciente);
-    bool relacao_paciente_apagar(RELACAO *r, PACIENTE *paciente); 
-    PACIENTE *relacao_paciente_buscar(RELACAO *r, int ID);
-    bool relacao_listar(RELACAO *r);
-    bool relacao_vazia(RELACAO *r);
-    bool relacao_cheia(RELACAO *r);
-
-
-
-
-
-
-\
 #endif 
 
 
