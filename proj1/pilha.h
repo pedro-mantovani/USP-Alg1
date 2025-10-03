@@ -2,6 +2,7 @@
     #define PILHA_H
 
     #include <stdbool.h>
+    #include "hist.h"
 
     typedef struct pilha PILHA;
 

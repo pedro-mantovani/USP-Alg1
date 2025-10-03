@@ -15,6 +15,7 @@
 
     bool FILA_vazia(FILA* fila);
     bool FILA_cheia(FILA* fila);
+    int FILA_tamanho(FILA* fila);
 
     void FILA_print(FILA* fila);
 
