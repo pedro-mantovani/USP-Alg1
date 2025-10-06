@@ -80,3 +80,16 @@ void FILA_print(FILA* fila){
         }
     }
 }
+
+PACIENTE* FILA_busca(FILA* fila, int ID){
+    if(fila != NULL){
+        int n = fila->tamanho;
+        int j = fila->inicio;
+
+        for(int i = 0; i < n; i++){
+            if(PACIENTE_get_ID(fila->paciente[j]) == ID) return fila->paciente[j];
+            j = (j + 1) % TAM;
+        }
+    }
+    return NULL;
+}

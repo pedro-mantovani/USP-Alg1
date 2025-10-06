@@ -55,9 +55,27 @@ void registrar(LISTA* l, FILA* f) {
 }
 
 
-void obito(LISTA* l){
-    printf("Funcao ainda nao implementada.\n");
+void obito(LISTA* l, FILA* f){ //recebe a lista(relação de pacientes)
+    if(l && !LISTA_vazia(l)){ //verifica se a lista existe 
+        int id;
+        printf("Digite o ID do paciente para registrar óbito: ");
+        scanf("%d", &id);
+        PACIENTE *p = LISTA_busca(l, id); 
+        if(p != NULL){ //verifica se o paciente está na relação de pacientes 
+            if(FILA_busca(f, id) == NULL){ //verifica se o paciente não está na fila para poder ter o óbito registrado 
+                PACIENTE *paux = LISTA_remover(l, PACIENTE_get_ID(p)); //remove o pacinte da relação de pacientes 
+                PACIENTE_set_vida(paux, false); // seta a vida do paciente para falso 
+                printf("Óbito do paciente %d registrado.\n", PACIENTE_get_ID(p));
+            }
+            else{
+                printf("Erro: paciente ainda não foi atendido!\n"); //o paciente ainda está na fila (não pode morrer)
+            }
+        }
+        else printf("Erro: paciente não registrado!\n"); 
+    }
+    else printf("Erro: lista de pacientes está vazia!\n"); 
 }
+
 
 void adicionar_procedimento(LISTA* l){
     printf("Funcao ainda nao implementada.\n");
@@ -78,7 +96,7 @@ void atender(FILA* f){
     // Reporta se fila não existir ou estiver vazia
     else{
         if(f == NULL) printf("Erro: fila não existe!\n");
-        else if(FILA_vazia(f)) printf("Erro: fila está vazia.\n");
+        else if(FILA_vazia(f)) printf("Erro: fila está vazia!\n");
     }
 }
 
@@ -97,10 +115,28 @@ void mostrar_fila(FILA* f){
     }
 }
 
-void imprimir_historico(LISTA* l){
-    printf("Funcao ainda nao implementada.\n");
+// ########## Função não testada devidamente pois as funções de porcedimento ainda não foram implementadas
+void imprimir_historico(LISTA *lista){
+    if(lista && !LISTA_vazia(lista)){
+        int id;
+        printf("Insira o ID do paciente: ");
+        scanf("%d", &id); 
+        PACIENTE *p = LISTA_busca(lista, id); 
+        if(p != NULL){
+            PILHA *historico = PACIENTE_get_historico(p); //pega o histórico do paciente(uma pilha)
+            if(pilha_vazia(historico)){
+                printf("O paciente ainda não possui histórico.\n"); //caso a pilha de históricos do paciente esteja vazia 
+            }
+            else{
+                pilha_print(historico); //imprime os itens da pilha (os procedimentos realizados) 
+            }  
+        }
+        else{
+            printf("Erro: paciente não encontrado na lista!\n"); 
+        }
+    }
+    else printf("Erro: lista de pacientes está vazia!\n"); 
 }
-
 
 int main(){
     // Declara lista e fila
@@ -146,7 +182,7 @@ int main(){
         scanf("%d", &acao);
         switch(acao){
             case 1: registrar(relacao_pacientes, fila_de_espera); break; // Pedro
-            case 2: obito(relacao_pacientes); break; // Mafer
+            case 2: obito(relacao_pacientes, fila_de_espera); break; // Mafer
             case 3: adicionar_procedimento(relacao_pacientes); break; // Pedro
             case 4: desfazer_procedimento(relacao_pacientes); break; // Pedro
             case 5: atender(fila_de_espera); break; // Clara
