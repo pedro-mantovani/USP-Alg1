@@ -14,7 +14,6 @@
 	int PACIENTE_get_ID(PACIENTE* paciente);
 	bool PACIENTE_set_ID(PACIENTE* paciente, int ID);
     const char* PACIENTE_get_nome(PACIENTE* paciente);
-    bool PACIENTE_set_vida(PACIENTE* paciente, bool vida);
     bool PACIENTE_set_nome(PACIENTE* paciente, char nome[]);
 
 #endif

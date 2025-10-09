@@ -8,7 +8,6 @@
 struct paciente_ {
     int ID;
     char nome[81];
-    bool vida; // True = vivo, false = morto
     PILHA* historico; // Armazena os procedimentos do histórico médico
 };
 
@@ -17,7 +16,6 @@ PACIENTE* PACIENTE_criar(int ID, char nome[]){
     if(paciente != NULL){
         paciente->ID = ID; // Atribui ID
         strcpy(paciente->nome, nome); // atribui o nome
-        paciente->vida = true; // Paciente sempre inicia com vida
         paciente->historico = pilha_criar(); // Cria histórico de procedimentos
         return paciente;
     }
@@ -65,14 +63,6 @@ const char* PACIENTE_get_nome(PACIENTE* paciente){
 bool PACIENTE_set_ID(PACIENTE* paciente, int ID){
     if(paciente != NULL){
         paciente->ID = ID;
-        return true;
-    }
-    return false;
-}
-
-bool PACIENTE_set_vida(PACIENTE* paciente, bool vida){
-    if(paciente != NULL){
-        paciente->vida = vida;
         return true;
     }
     return false;

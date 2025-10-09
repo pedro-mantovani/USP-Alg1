@@ -51,7 +51,7 @@ bool LISTA_inserir(LISTA *lista, PACIENTE *paciente){
     } else return false; 
 }
 
-PACIENTE *LISTA_remover(LISTA *lista, int id){
+bool LISTA_remover(LISTA *lista, int id){
     if(lista && !LISTA_vazia(lista)){
         NO *p = lista->sentinela->proximo;
         NO *a = lista->sentinela;
@@ -61,9 +61,10 @@ PACIENTE *LISTA_remover(LISTA *lista, int id){
             p = p->proximo;
         }
 
-        if(p == lista->sentinela) return NULL;
+        if(p == lista->sentinela)
+            return 0;
 
-        PACIENTE *retornar = p->paciente;
+        PACIENTE_apagar(&(p->paciente));
         a->proximo = p->proximo;
 
         if(p == lista->fim) lista->fim = a;
@@ -72,8 +73,9 @@ PACIENTE *LISTA_remover(LISTA *lista, int id){
         p = NULL;
 
         lista->tamanho--;
-        return retornar;
-    } else return NULL;
+        return 1;
+    }
+    else return 0;
 }
 
 PACIENTE *LISTA_busca(LISTA *lista, int id){

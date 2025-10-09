@@ -59,7 +59,7 @@ PACIENTE* FILA_remover(FILA* fila){
 }
 
 bool FILA_vazia(FILA* fila){
-    return (fila != NULL && fila->tamanho == 0);
+    return (fila == NULL || fila->tamanho == 0);
 }
 
 bool FILA_cheia(FILA* fila){

@@ -26,6 +26,10 @@ void registrar(LISTA* l, FILA* f) {
     printf("Qual o ID do usuário?\n");
     int ID;
     scanf("%d", &ID);
+    if(ID < 0){
+        printf("Erro: Não são permitidos ID's negativos\n");
+        return;
+    }
     PACIENTE* paciente = LISTA_busca(l, ID);
     // Verifica se já existe paciente com esse ID
     if (paciente != NULL) {
@@ -72,18 +76,15 @@ void obito(LISTA* l, FILA* f){ //recebe a lista(relação de pacientes)
         int id;
         printf("Digite o ID do paciente para registrar óbito: ");
         scanf("%d", &id);
-        PACIENTE *p = LISTA_busca(l, id); 
-        if(p != NULL){ //verifica se o paciente está na relação de pacientes 
-            if(FILA_busca(f, id) == NULL){ //verifica se o paciente não está na fila para poder ter o óbito registrado 
-                PACIENTE *paux = LISTA_remover(l, PACIENTE_get_ID(p)); //remove o pacinte da relação de pacientes 
-                PACIENTE_set_vida(paux, false); // seta a vida do paciente para falso 
-                printf("Óbito do paciente %d registrado.\n", PACIENTE_get_ID(p));
+        if(FILA_busca(f, id) == NULL){ //verifica se o paciente está na fila de espera
+            if(LISTA_remover(l, id)){
+                printf("Óbito do paciente registrado\n");
+            }else{
+                printf("Erro: paciente não encontrado\n"); // Só da erro se o paciente não for encontrado ou a lista não existir (o que já vimos não ser o caso)
             }
-            else{
-                printf("Erro: paciente ainda não foi atendido!\n"); //o paciente ainda está na fila (não pode morrer)
-            }
+        }else{
+            printf("Erro: paciente ainda não foi atendido!\n"); //o paciente ainda está na fila (não pode morrer)
         }
-        else printf("Erro: paciente não registrado!\n"); 
     }
     else printf("Erro: lista de pacientes está vazia!\n"); 
 }
