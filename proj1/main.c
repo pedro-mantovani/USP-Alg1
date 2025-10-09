@@ -23,28 +23,26 @@ void registrar(LISTA* l, FILA* f) {
     scanf("%d", &ID);
 
     // Verifica se já existe paciente com esse ID
-    if (LISTA_busca(l, ID) != NULL) {
-        printf("Erro: ID já cadastrado!\n");
-        return;
+    PACIENTE* paciente = LISTA_busca(l, ID);
+    if (paciente != NULL) {
+        printf("Paciente já cadastrado!\n");
+    }else{
+        // Cria novo paciente
+        paciente = PACIENTE_criar(ID);
+        if (paciente == NULL) {
+            printf("Erro ao criar paciente!\n");
+            return;
+        }
+        // Insere paciente na lista
+        if (!LISTA_inserir(l, paciente)) {
+            printf("Erro ao inserir paciente no sistema!\n");
+            return;
+        }
+        printf("Paciente cadastrado no sistema.\n");
     }
-
-    // Cria novo paciente
-    PACIENTE* paciente = PACIENTE_criar(ID);
-    if (paciente == NULL) {
-        printf("Erro ao criar paciente!\n");
-        return;
-    }
-
-    // Insere paciente na lista
-    if (!LISTA_inserir(l, paciente)) {
-        printf("Erro ao inserir paciente no sistema!\n");
-        return;
-    }
-    printf("Paciente cadastrado no sistema.\n");
-
     // Insere paciente na fila
     if (!FILA_inserir(f, paciente)) {
-        printf("Erro: fila de espera cheia!\n");
+        printf("Erro ao inserir na fila de espera\n");
         return;
     }
     printf("Paciente inserido na fila de espera.\n");
@@ -59,11 +57,38 @@ void adicionar_procedimento(){
     printf("Qual o ID do paciente que terá um procedimento adicionado?\n");
     int ID;
     scanf("%d", &ID);
-
+    PACIENTE* paciente = LISTA_busca(ID);
+    if(paciente == NULL){
+        printf("Paciente não encontrado\n");
+        return;
+    }
+    HIST* hist = PACIENTE_get_hist(paciente);
+    char procedimento[101];
+    scanf("%s", procedimento);
+    if(pilha_empilhar(hist, procedimento)){
+        printf("Procedimento inserido com sucesso!\n");
+        return;
+    }
+    print("Erro ao iserir procedimento\n");
 }
 
 void desfazer_procedimento(){
-
+    printf("Qual o ID do paciente que terá um procedimento removido?\n");
+    int ID;
+    scanf("%d", &ID);
+    PACIENTE* paciente = LISTA_busca(ID);
+    if(paciente == NULL){
+        printf("Paciente não encontrado\n");
+        return;
+    }
+    HIST* hist = PACIENTE_get_hist(paciente);
+    char procedimento[101];
+    scanf("%s", procedimento);
+    if(pilha_empilhar(hist, procedimento)){
+        printf("Procedimento inserido com sucesso!\n");
+        return;
+    }
+    print("Erro ao iserir procedimento\n");
 }
 
 void atender(){
@@ -87,7 +112,7 @@ int main(){
         int acao;
         scanf("%d", &acao);
         switch(acao){
-            case 1: registrar(); break; // Pedro
+            case 1: registrar(); break; // Pedro - Feito
             case 2: obito(); break; // Mafer
             case 3: adicionar_procedimento(); break; // Pedro
             case 4: desfazer_procedimento(); break; // Pedro
