@@ -3,6 +3,7 @@
 	#include "paciente.h"
     #include "triagem.h"
     #include "relacaopacientes.h"
+    #include "pilha.h"
     #include <stdbool.h>
 
     bool SAVE(LISTA *lista, FILA *fila); // Salva os itens da lista e da fila em arquivos

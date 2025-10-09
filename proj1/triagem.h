@@ -12,9 +12,10 @@
 
     bool FILA_inserir(FILA* fila, PACIENTE* paciente);
     PACIENTE* FILA_remover(FILA* fila);
-
+    PACIENTE* FILA_busca(FILA* fila, int ID); 
     bool FILA_vazia(FILA* fila);
     bool FILA_cheia(FILA* fila);
+    int FILA_tamanho(FILA* fila);
 
     void FILA_print(FILA* fila);
 
