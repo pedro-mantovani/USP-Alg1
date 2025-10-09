@@ -77,6 +77,7 @@ void FILA_print(FILA* fila){
     if(fila != NULL && !FILA_vazia(fila)){
         for(int i = 0; i < fila->tamanho; i++){
             PACIENTE_imprimir(fila->paciente[(fila->inicio + i) % TAM]);
+            printf("\n");
         }
     }
 }

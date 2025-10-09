@@ -48,12 +48,14 @@ bool SAVE(LISTA *lista, FILA *fila) {
     // Loop guarda todos os IDs + procedimentos de cada ID da lista em ordem
     for(int i = 0; i < total_pacientes; i++){
 
-        // Remve paciente da lista e pega o ID dele
+        // Remove paciente da lista e pega ID + nome
         PACIENTE *p = LISTA_remover_inicio(lista);
         int id = PACIENTE_get_ID(p);
+        const char* nome = PACIENTE_get_nome(p);
 
-        // Escreve o ID dele no arquivo
+        // Salva ID e nome do paciente
         fwrite(&id, sizeof(int), 1, fp_lista);
+        fwrite(nome, sizeof(char), 101, fp_lista);  // 100 + '\0'
 
         // Pega o histórico desse paciente e o tamanho
         PILHA* historico = PACIENTE_get_historico(p);
@@ -107,8 +109,12 @@ bool LOAD(LISTA **lista, FILA **fila){
 
         // A cada iteração, lê o próximo ID do arquivo pra criar um paciente correspondente
         int id;
+        char nome[101];
         fread(&id, sizeof(int), 1, fp_lista);
-        PACIENTE* p = PACIENTE_criar(id);
+        fread(nome, sizeof(char), 101, fp_lista);
+
+        PACIENTE* p = PACIENTE_criar(id, nome);
+
 
         // Lê a quantidade de procedimentos do paciente da iteração tem
         int hist_tamanho;

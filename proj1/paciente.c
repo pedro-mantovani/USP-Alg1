@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "paciente.h"
@@ -6,14 +7,16 @@
 
 struct paciente_ {
     int ID;
+    char nome[81];
     bool vida; // True = vivo, false = morto
     PILHA* historico; // Armazena os procedimentos do histórico médico
 };
 
-PACIENTE* PACIENTE_criar(int ID){
+PACIENTE* PACIENTE_criar(int ID, char nome[]){
     PACIENTE* paciente = (PACIENTE*) malloc(sizeof(PACIENTE));
     if(paciente != NULL){
         paciente->ID = ID; // Atribui ID
+        strcpy(paciente->nome, nome); // atribui o nome
         paciente->vida = true; // Paciente sempre inicia com vida
         paciente->historico = pilha_criar(); // Cria histórico de procedimentos
         return paciente;
@@ -33,7 +36,8 @@ bool PACIENTE_apagar(PACIENTE** paciente){
 
 void PACIENTE_imprimir(PACIENTE* paciente){
     if(paciente != NULL){
-        printf("%d\n", paciente->ID);
+        printf("Nome: %s\n", paciente->nome);
+        printf("ID: %d\n", paciente->ID);
     }
 }
 
@@ -51,6 +55,13 @@ int PACIENTE_get_ID(PACIENTE* paciente){
     return -1; // Convenção de que IDs negativos são inválidos
 }
 
+const char* PACIENTE_get_nome(PACIENTE* paciente){
+    if(paciente != NULL){
+        return paciente->nome;
+    }
+    return NULL;
+}
+
 bool PACIENTE_set_ID(PACIENTE* paciente, int ID){
     if(paciente != NULL){
         paciente->ID = ID;
@@ -62,6 +73,14 @@ bool PACIENTE_set_ID(PACIENTE* paciente, int ID){
 bool PACIENTE_set_vida(PACIENTE* paciente, bool vida){
     if(paciente != NULL){
         paciente->vida = vida;
+        return true;
+    }
+    return false;
+}
+
+bool PACIENTE_set_nome(PACIENTE* paciente, char nome[]){
+    if(paciente != NULL){
+        strcpy(paciente->nome, nome);
         return true;
     }
     return false;

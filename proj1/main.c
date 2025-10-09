@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 #include "hist.h"
 #include "pilha.h"
 #include "paciente.h"
@@ -25,28 +26,39 @@ void registrar(LISTA* l, FILA* f) {
     printf("Qual o ID do usuário?\n");
     int ID;
     scanf("%d", &ID);
-
+    PACIENTE* paciente = LISTA_busca(l, ID);
     // Verifica se já existe paciente com esse ID
-    if (LISTA_busca(l, ID) != NULL) {
-        printf("Erro: ID já cadastrado!\n");
-        return;
+    if (paciente != NULL) {
+        printf("ID já cadastrado!\n");
+        if(FILA_busca(f, ID)){
+            printf("Esse paciente já está na flia de espera!\n");
+            return;
+        }
+    }else{
+        // Lê o nome do paciente
+        printf("Qual o nome do usuário?\n");
+        char nome[81];
+        getchar();
+        fgets(nome, 81, stdin);
+        nome[strcspn(nome, "\n")] = '\0';
+
+
+        // Cria novo paciente
+        paciente = PACIENTE_criar(ID, nome);
+        if (paciente == NULL) {
+            printf("Erro ao criar paciente!\n");
+            return;
+        }
+
+        // Insere paciente na lista
+        if (!LISTA_inserir(l, paciente)) {
+            printf("Erro ao inserir paciente no sistema!\n");
+            return;
+        }
+        printf("Paciente cadastrado no sistema.\n");
     }
 
-    // Cria novo paciente
-    PACIENTE* paciente = PACIENTE_criar(ID);
-    if (paciente == NULL) {
-        printf("Erro ao criar paciente!\n");
-        return;
-    }
-
-    // Insere paciente na lista
-    if (!LISTA_inserir(l, paciente)) {
-        printf("Erro ao inserir paciente no sistema!\n");
-        return;
-    }
-    printf("Paciente cadastrado no sistema.\n");
-
-    // Insere paciente na fila
+    // Insere paciente na fila de espera
     if (!FILA_inserir(f, paciente)) {
         printf("Erro: fila de espera cheia!\n");
         return;
@@ -77,7 +89,7 @@ void obito(LISTA* l, FILA* f){ //recebe a lista(relação de pacientes)
 }
 
 void adicionar_procedimento(LISTA* l){
-    printf("Qual o ID do paciente que terá um procedimento adicionado?\n");
+    printf("Digite o ID do paciente para adicionar um procedimento: ");
     int ID;
     scanf("%d", &ID);
     PACIENTE* paciente = LISTA_busca(l, ID);
@@ -87,7 +99,10 @@ void adicionar_procedimento(LISTA* l){
     }
     PILHA* hist = PACIENTE_get_historico(paciente);
     char procedimento[101];
-    scanf("%s", procedimento);
+    printf("Qual procedimento será adicionado?\n");
+    getchar();
+    fgets(procedimento, 101, stdin);
+    procedimento[strcspn(procedimento, "\n")] = '\0';
     HIST* proc = hist_criar(procedimento);
     if(pilha_empilhar(hist, proc)){
         printf("Procedimento inserido com sucesso!\n");
@@ -97,7 +112,7 @@ void adicionar_procedimento(LISTA* l){
 }
 
 void desfazer_procedimento(LISTA* l){
-    printf("Qual o ID do paciente que terá um procedimento removido?\n");
+    printf("Digite o ID do paciente para desfazer um procedimento: ");
     int ID;
     scanf("%d", &ID);
     PACIENTE* paciente = LISTA_busca(l, ID);
@@ -106,14 +121,14 @@ void desfazer_procedimento(LISTA* l){
         return;
     }
     PILHA* hist = PACIENTE_get_historico(paciente);
-    char procedimento[101];
-    scanf("%s", procedimento);
-    HIST* proc = hist_criar(procedimento);
-    if(pilha_empilhar(hist, proc)){
-        printf("Procedimento inserido com sucesso!\n");
-        return;
+    HIST* procedimento = pilha_desempilhar(hist);
+    if(procedimento == NULL)
+        printf("Nenhum procedimento a ser retirado\n");
+    else{
+        printf("Procedimento \"%s\" retirado\n", hist_get(procedimento));
+        hist_apagar(&procedimento);
     }
-    printf("Erro ao iserir procedimento\n");
+    return;
 }
 
 
@@ -122,7 +137,7 @@ void atender(FILA* f){
     // Tira o paciente da fila
     if(f != NULL && !FILA_vazia(f)){
         PACIENTE* p = FILA_remover(f);
-        printf("Paciente com ID %d chamado para atendimento.\n", PACIENTE_get_ID(p));
+        printf("Paciente \"%s\" chamado(a) para atendimento.\n", PACIENTE_get_nome(p));
     }
 
     // Reporta se fila não existir ou estiver vazia
