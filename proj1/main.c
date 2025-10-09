@@ -76,14 +76,46 @@ void obito(LISTA* l, FILA* f){ //recebe a lista(relação de pacientes)
     else printf("Erro: lista de pacientes está vazia!\n"); 
 }
 
-
 void adicionar_procedimento(LISTA* l){
-    printf("Funcao ainda nao implementada.\n");
+    printf("Qual o ID do paciente que terá um procedimento adicionado?\n");
+    int ID;
+    scanf("%d", &ID);
+    PACIENTE* paciente = LISTA_busca(l, ID);
+    if(paciente == NULL){
+        printf("Paciente não encontrado\n");
+        return;
+    }
+    PILHA* hist = PACIENTE_get_historico(paciente);
+    char procedimento[101];
+    scanf("%s", procedimento);
+    HIST* proc = hist_criar(procedimento);
+    if(pilha_empilhar(hist, proc)){
+        printf("Procedimento inserido com sucesso!\n");
+        return;
+    }
+    printf("Erro ao iserir procedimento\n");
 }
 
 void desfazer_procedimento(LISTA* l){
-    printf("Funcao ainda nao implementada.\n");
+    printf("Qual o ID do paciente que terá um procedimento removido?\n");
+    int ID;
+    scanf("%d", &ID);
+    PACIENTE* paciente = LISTA_busca(l, ID);
+    if(paciente == NULL){
+        printf("Paciente não encontrado\n");
+        return;
+    }
+    PILHA* hist = PACIENTE_get_historico(paciente);
+    char procedimento[101];
+    scanf("%s", procedimento);
+    HIST* proc = hist_criar(procedimento);
+    if(pilha_empilhar(hist, proc)){
+        printf("Procedimento inserido com sucesso!\n");
+        return;
+    }
+    printf("Erro ao iserir procedimento\n");
 }
+
 
 void atender(FILA* f){
 
@@ -181,14 +213,14 @@ int main(){
         int acao;
         scanf("%d", &acao);
         switch(acao){
-            case 1: registrar(relacao_pacientes, fila_de_espera); break; // Pedro
-            case 2: obito(relacao_pacientes, fila_de_espera); break; // Mafer
-            case 3: adicionar_procedimento(relacao_pacientes); break; // Pedro
-            case 4: desfazer_procedimento(relacao_pacientes); break; // Pedro
-            case 5: atender(fila_de_espera); break; // Clara
-            case 6: mostrar_fila(fila_de_espera); break; // Clara
-            case 7: imprimir_historico(relacao_pacientes); break; // Mafer
-            case 8: menu(); break; // Feito
+            case 1: registrar(relacao_pacientes, fila_de_espera); break;
+            case 2: obito(relacao_pacientes, fila_de_espera); break;
+            case 3: adicionar_procedimento(relacao_pacientes); break;
+            case 4: desfazer_procedimento(relacao_pacientes); break;
+            case 5: atender(fila_de_espera); break;
+            case 6: mostrar_fila(fila_de_espera); break;
+            case 7: imprimir_historico(relacao_pacientes); break;
+            case 8: menu(); break;
             case 9: flag = 1; break;
             default: printf("Comando não encontrado, digite um número de 1 a 9\n");
         }
