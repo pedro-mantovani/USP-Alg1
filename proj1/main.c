@@ -21,7 +21,7 @@ void menu(void){
 }
 
 void registrar(LISTA* l, FILA* f) {
-    printf("Digite o ID do usuário (número): ");
+    printf("Digite o ID para cadastro do usuário (número): ");
     int ID;
     if(scanf("%d", &ID) != 1){
         printf("Erro: ID inválido!\n");
@@ -191,7 +191,7 @@ void mostrar_fila(FILA* f){
 void imprimir_historico(LISTA *lista){
     if(lista && !LISTA_vazia(lista)){
         int id;
-        printf("Insira o ID do paciente: ");
+        printf("Insira o ID do paciente para ver o histórico: ");
         if(scanf("%d", &id) != 1){
             printf("Erro: ID inválido!\n");
             while(getchar() != '\n');
@@ -200,12 +200,7 @@ void imprimir_historico(LISTA *lista){
         PACIENTE *p = LISTA_busca(lista, id); 
         if(p != NULL){
             PILHA *historico = PACIENTE_get_historico(p); //pega o histórico do paciente(uma pilha)
-            if(pilha_vazia(historico)){
-                printf("O paciente não possui histórico.\n"); //caso a pilha de históricos do paciente esteja vazia 
-            }
-            else{
-                pilha_print(historico); //imprime os itens da pilha (os procedimentos realizados) 
-            }  
+            pilha_print(historico); //imprime os itens da pilha (os procedimentos realizados) 
         }
         else{
             printf("Erro: paciente não encontrado na lista!\n"); 
@@ -254,7 +249,7 @@ int main(){
     menu();
     bool flag = 0;
     while(!flag){
-        printf("\nDigite uma ação (1-9): ");
+        printf("\nDigite uma ação de 1 a 9 (menu 8): ");
         int acao;
         if(scanf("%d", &acao) == 1){
             printf("\n");
