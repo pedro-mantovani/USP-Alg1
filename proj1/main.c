@@ -96,6 +96,7 @@ void obito(LISTA* l, FILA* f){ //recebe a lista(relação de pacientes)
 }
 
 void adicionar_procedimento(LISTA* l, FILA* f){
+    // Pergunta o ID do paciente
     printf("Digite o ID do paciente para adicionar um procedimento: ");
     int ID;
     if(scanf("%d", &ID) != 1){
@@ -103,15 +104,18 @@ void adicionar_procedimento(LISTA* l, FILA* f){
         while(getchar() != '\n');
         return;
     }
+    // Verifica se ele está na fila de espera
     if(FILA_busca(f, ID) != NULL){
         printf("Erro: paciente ainda não foi atendido!\n");
         return;
     }
+    // Verifica se o paciente possui cadastro
     PACIENTE* paciente = LISTA_busca(l, ID);
     if(paciente == NULL){
         printf("Erro: paciente não encontrado!\n");
         return;
     }
+    // Pega o histórico do paciente e adiciona um procedimento
     PILHA* hist = PACIENTE_get_historico(paciente);
     char procedimento[101];
     printf("Digite o procedimento que será adicionado: ");
@@ -127,6 +131,7 @@ void adicionar_procedimento(LISTA* l, FILA* f){
 }
 
 void desfazer_procedimento(LISTA* l){
+    // Encontra o paciente que terá o último procedimento desfeito
     printf("Digite o ID do paciente para desfazer um procedimento: ");
     int ID;
     if(scanf("%d", &ID) != 1){
@@ -139,7 +144,9 @@ void desfazer_procedimento(LISTA* l){
         printf("Erro: paciente não encontrado!\n");
         return;
     }
+    // Pega o histórico do paciente
     PILHA* hist = PACIENTE_get_historico(paciente);
+    // Retira o último procedimento e informa qual era para o usuário
     HIST* procedimento = pilha_desempilhar(hist);
     if(procedimento == NULL)
         printf("Nenhum procedimento a ser retirado.\n");

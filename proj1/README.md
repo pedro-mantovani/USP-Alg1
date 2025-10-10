@@ -1,8 +1,8 @@
 # Introdução
 O projeto consiste na criação de um sistema para o pronto socorro.
 
-Para isso usaremos 3 TADs:
-1. Lista dinâmica para a listagem dos pacientes
+Para isso usaremos 3 estruturas de dados principais:
+1. Lista para a registro dos pacientes
 2. Fila para a triagem
 3. Pilha para o histórico médico
 
@@ -14,7 +14,8 @@ Esses TADs serão usados em um sitema com a seguinte interface:
 5. Chamar paciente para atendimento
 6. Mostrar fila de espera
 7. Mostrar histórico do paciente
-8. Sair
+8. Mostrar menu
+9. Sair
 
 # Tipos Abstratos de Dados
 
@@ -31,9 +32,13 @@ Para construir uma fila de espera para a triagem, foi utilizado um TAD fila (mé
 Esse modelo de fila foi escolhido uma vez que, além da fila ser limitada, o que pode ser facilmente controlado com uma implementação não encadeada, o modelo sequencial circular garante uma implementação muito mais simplificada, eficiente e econômica do que uma encadeada não circular. Isso porque, por mais que a fila receba os pacientes diretamente da lista, não sendo necessário alocar memória para eles novamente, em uma fila encadeada, seria necessário alocar memória para cada nó. Utilizando a fila sequencial, isso não se faz mais necessário, economizando memória. Além disso, em uma implementação linear, todos os integrantes da fila são deslocados após uma operação de remoção para preencher o espaço vazio. A implementação circular evita que isso aconteça, deslocando apenas os indicadores "início" e "fim" e utilizando operações de resto para caso o indicador "fim" ultrapasse o último índice.
 
 ## Item - Paciente
-O TAD item, para este projeto, foi adaptado para armazenar um paciente e realizar operações sobre ele. Na struct, são guardados o ID, o nome e a pilha que corresponde ao seu histórico médico. As operações também estão devidamente adaptadas para lidar com todos esses dados. 
+O TAD item, para este projeto, foi adaptado para armazenar um paciente e realizar operações sobre ele. Na struct, são guardados o ID, o nome e a pilha que corresponde ao seu histórico médico. As operações também estão devidamente adaptadas para lidar com todos esses dados.
+
+## Item - Histórico
+Outro TAD de um tipo genérico de item implementado foi um TAD histórico (hist), ele consiste em uma string de 100 caracteres que representam um procedimento, sendo que uma pilha de hist forma um histórico completo do paciente.
 
 # Interface
+A interface foi feita de maneira amigável, sempre reportando erros, entradas inválidas e outros usos inválidos comuns como remover um paciente que já não existe ou cadastrar um paciente que já está na fila de espera.
 
 # Autores
 Pedro Otavio Mantovani - 16896987
