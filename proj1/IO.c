@@ -55,7 +55,7 @@ bool SAVE(LISTA *lista, FILA *fila) {
 
         // Salva ID e nome do paciente
         fwrite(&id, sizeof(int), 1, fp_lista);
-        fwrite(nome, sizeof(char), 101, fp_lista);  // 100 + '\0'
+        fwrite(nome, sizeof(char), 81, fp_lista);  // 80 + '\0'
 
         // Pega o histórico desse paciente e o tamanho
         PILHA* historico = PACIENTE_get_historico(p);
@@ -109,9 +109,9 @@ bool LOAD(LISTA **lista, FILA **fila){
 
         // A cada iteração, lê o próximo ID do arquivo pra criar um paciente correspondente
         int id;
-        char nome[101];
+        char nome[81];
         fread(&id, sizeof(int), 1, fp_lista);
-        fread(nome, sizeof(char), 101, fp_lista);
+        fread(nome, sizeof(char), 81, fp_lista);
 
         PACIENTE* p = PACIENTE_criar(id, nome);
 

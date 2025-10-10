@@ -25,7 +25,17 @@ Nesse caso, apesar das especificações do problema limitarem os procedimentos a
 
 Por outro lado, alocar dinâmicamente, ocupa um pouco mais de memórica para cada procedimento (8 bytes a mais por conta do ponteiro), mas isso representa menos de 10% cada elemento do histórico, ou seja, esse método só gastaria mais memória que a alocação estática nos casos que o paciente realiza 10 procedimentos, o que dificilmente será a maioria dos casos.
 
+## Fila - Triagem
+Para construir uma fila de espera para a triagem, foi utilizado um TAD fila (método FIFO - First-In, First-Out) com implementação sequencial e circular.
+
+Esse modelo de fila foi escolhido uma vez que, além da fila ser limitada, o que pode ser facilmente controlado com uma implementação não encadeada, o modelo sequencial circular garante uma implementação muito mais simplificada, eficiente e econômica do que uma encadeada não circular. Isso porque, por mais que a fila receba os pacientes diretamente da lista, não sendo necessário alocar memória para eles novamente, em uma fila encadeada, seria necessário alocar memória para cada nó. Utilizando a fila sequencial, isso não se faz mais necessário, economizando memória. Além disso, em uma implementação linear, todos os integrantes da fila são deslocados após uma operação de remoção para preencher o espaço vazio. A implementação circular evita que isso aconteça, deslocando apenas os indicadores "início" e "fim" e utilizando operações de resto para caso o indicador "fim" ultrapasse o último índice.
+
+## Item - Paciente
+O TAD item, para este projeto, foi adaptado para armazenar um paciente e realizar operações sobre ele. Na struct, são guardados o ID, o nome e a pilha que corresponde ao seu histórico médico. As operações também estão devidamente adaptadas para lidar com todos esses dados. 
+
 # Interface
 
 # Autores
-Pedro Otavio Mantovani
+Pedro Otavio Mantovani - [numero usp]
+Clara Santos de Melo - 16860650
+Maria Fernanda Maia de Souza Pinto - 16889342

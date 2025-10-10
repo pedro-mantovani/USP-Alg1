@@ -20,27 +20,29 @@ void menu(void){
     printf("9. Sair\n");
 }
 
-// #### COLOCA QUE ID NEGATIVO NAO PODE SER INSERIDO!!!!!!!!!!!!!
-// Isso pq -1 é o nosso índice de erro
 void registrar(LISTA* l, FILA* f) {
-    printf("Qual o ID do usuário?\n");
+    printf("Digite o ID do usuário (número): ");
     int ID;
-    scanf("%d", &ID);
+    if(scanf("%d", &ID) != 1){
+        printf("Erro: ID inválido!\n");
+        while(getchar() != '\n');
+        return;
+    }
     if(ID < 0){
-        printf("Erro: Não são permitidos ID's negativos\n");
+        printf("Erro: Não são permitidos IDs negativos!\n");
         return;
     }
     PACIENTE* paciente = LISTA_busca(l, ID);
     // Verifica se já existe paciente com esse ID
     if (paciente != NULL) {
-        printf("ID já cadastrado!\n");
+        printf("ID já cadastrado.\n");
         if(FILA_busca(f, ID)){
-            printf("Esse paciente já está na flia de espera!\n");
+            printf("Esse paciente já está na fila de espera!\n");
             return;
         }
     }else{
         // Lê o nome do paciente
-        printf("Qual o nome do usuário?\n");
+        printf("Digite o nome do usuário: ");
         char nome[81];
         getchar();
         fgets(nome, 81, stdin);
@@ -75,12 +77,16 @@ void obito(LISTA* l, FILA* f){ //recebe a lista(relação de pacientes)
     if(l && !LISTA_vazia(l)){ //verifica se a lista existe 
         int id;
         printf("Digite o ID do paciente para registrar óbito: ");
-        scanf("%d", &id);
+        if(scanf("%d", &id) != 1){
+            printf("Erro: ID inválido!\n");
+            while(getchar() != '\n');
+            return;
+        }
         if(FILA_busca(f, id) == NULL){ //verifica se o paciente está na fila de espera
             if(LISTA_remover(l, id)){
-                printf("Óbito do paciente registrado\n");
+                printf("Óbito do paciente registrado.\n");
             }else{
-                printf("Erro: paciente não encontrado\n"); // Só da erro se o paciente não for encontrado ou a lista não existir (o que já vimos não ser o caso)
+                printf("Erro: paciente não encontrado!\n"); // Só da erro se o paciente não for encontrado ou a lista não existir (o que já vimos não ser o caso)
             }
         }else{
             printf("Erro: paciente ainda não foi atendido!\n"); //o paciente ainda está na fila (não pode morrer)
@@ -89,44 +95,56 @@ void obito(LISTA* l, FILA* f){ //recebe a lista(relação de pacientes)
     else printf("Erro: lista de pacientes está vazia!\n"); 
 }
 
-void adicionar_procedimento(LISTA* l){
+void adicionar_procedimento(LISTA* l, FILA* f){
     printf("Digite o ID do paciente para adicionar um procedimento: ");
     int ID;
-    scanf("%d", &ID);
+    if(scanf("%d", &ID) != 1){
+        printf("Erro: ID inválido!\n");
+        while(getchar() != '\n');
+        return;
+    }
+    if(FILA_busca(f, ID) != NULL){
+        printf("Erro: paciente ainda não foi atendido!\n");
+        return;
+    }
     PACIENTE* paciente = LISTA_busca(l, ID);
     if(paciente == NULL){
-        printf("Paciente não encontrado\n");
+        printf("Erro: paciente não encontrado!\n");
         return;
     }
     PILHA* hist = PACIENTE_get_historico(paciente);
     char procedimento[101];
-    printf("Qual procedimento será adicionado?\n");
+    printf("Digite o procedimento que será adicionado: ");
     getchar();
     fgets(procedimento, 101, stdin);
     procedimento[strcspn(procedimento, "\n")] = '\0';
     HIST* proc = hist_criar(procedimento);
     if(pilha_empilhar(hist, proc)){
-        printf("Procedimento inserido com sucesso!\n");
+        printf("Procedimento inserido com sucesso.\n");
         return;
     }
-    printf("Erro ao iserir procedimento\n");
+    printf("Erro ao inserir procedimento!\n");
 }
 
 void desfazer_procedimento(LISTA* l){
     printf("Digite o ID do paciente para desfazer um procedimento: ");
     int ID;
-    scanf("%d", &ID);
+    if(scanf("%d", &ID) != 1){
+        printf("Erro: ID inválido!\n");
+        while(getchar() != '\n');
+        return;
+    }
     PACIENTE* paciente = LISTA_busca(l, ID);
     if(paciente == NULL){
-        printf("Paciente não encontrado\n");
+        printf("Erro: paciente não encontrado!\n");
         return;
     }
     PILHA* hist = PACIENTE_get_historico(paciente);
     HIST* procedimento = pilha_desempilhar(hist);
     if(procedimento == NULL)
-        printf("Nenhum procedimento a ser retirado\n");
+        printf("Nenhum procedimento a ser retirado.\n");
     else{
-        printf("Procedimento \"%s\" retirado\n", hist_get(procedimento));
+        printf("Procedimento \"%s\" retirado.\n", hist_get(procedimento));
         hist_apagar(&procedimento);
     }
     return;
@@ -138,7 +156,7 @@ void atender(FILA* f){
     // Tira o paciente da fila
     if(f != NULL && !FILA_vazia(f)){
         PACIENTE* p = FILA_remover(f);
-        printf("Paciente \"%s\" chamado(a) para atendimento.\n", PACIENTE_get_nome(p));
+        printf("Paciente \"%s\" (ID: %d) chamado(a) para atendimento.\n", PACIENTE_get_nome(p), PACIENTE_get_ID(p));
     }
 
     // Reporta se fila não existir ou estiver vazia
@@ -163,17 +181,20 @@ void mostrar_fila(FILA* f){
     }
 }
 
-// ########## Função não testada devidamente pois as funções de porcedimento ainda não foram implementadas
 void imprimir_historico(LISTA *lista){
     if(lista && !LISTA_vazia(lista)){
         int id;
         printf("Insira o ID do paciente: ");
-        scanf("%d", &id); 
+        if(scanf("%d", &id) != 1){
+            printf("Erro: ID inválido!\n");
+            while(getchar() != '\n');
+            return;
+        }
         PACIENTE *p = LISTA_busca(lista, id); 
         if(p != NULL){
             PILHA *historico = PACIENTE_get_historico(p); //pega o histórico do paciente(uma pilha)
             if(pilha_vazia(historico)){
-                printf("O paciente ainda não possui histórico.\n"); //caso a pilha de históricos do paciente esteja vazia 
+                printf("O paciente não possui histórico.\n"); //caso a pilha de históricos do paciente esteja vazia 
             }
             else{
                 pilha_print(historico); //imprime os itens da pilha (os procedimentos realizados) 
@@ -222,23 +243,30 @@ int main(){
 
     // -------------------------------------------------
 
-    printf("Sistema do pronto-socorro iniciado, selecione uma das opções:\n");
+    printf("Sistema do pronto-socorro iniciado. Selecione uma das opções:\n");
     menu();
     bool flag = 0;
     while(!flag){
+        printf("\nDigite uma ação (1-9): ");
         int acao;
-        scanf("%d", &acao);
-        switch(acao){
-            case 1: registrar(relacao_pacientes, fila_de_espera); break;
-            case 2: obito(relacao_pacientes, fila_de_espera); break;
-            case 3: adicionar_procedimento(relacao_pacientes); break;
-            case 4: desfazer_procedimento(relacao_pacientes); break;
-            case 5: atender(fila_de_espera); break;
-            case 6: mostrar_fila(fila_de_espera); break;
-            case 7: imprimir_historico(relacao_pacientes); break;
-            case 8: menu(); break;
-            case 9: flag = 1; break;
-            default: printf("Comando não encontrado, digite um número de 1 a 9\n");
+        if(scanf("%d", &acao) == 1){
+            printf("\n");
+            switch(acao){
+                case 1: registrar(relacao_pacientes, fila_de_espera); break;
+                case 2: obito(relacao_pacientes, fila_de_espera); break;
+                case 3: adicionar_procedimento(relacao_pacientes, fila_de_espera); break;
+                case 4: desfazer_procedimento(relacao_pacientes); break;
+                case 5: atender(fila_de_espera); break;
+                case 6: mostrar_fila(fila_de_espera); break;
+                case 7: imprimir_historico(relacao_pacientes); break;
+                case 8: menu(); break;
+                case 9: flag = 1; break;
+                default: printf("Comando não encontrado, digite um número de 1 a 9.\n");
+            }
+        }
+        else{
+            printf("Entrada inválida. Digite apenas números no menu.\n");
+            while(getchar() != '\n');
         }
     }
 
@@ -251,6 +279,6 @@ int main(){
     LISTA_apagar(&relacao_pacientes);
     FILA_apagar(&fila_de_espera);
 
-    printf("Fim do programa\n");
+    printf("Fim do programa.\n");
     return 0;
 }

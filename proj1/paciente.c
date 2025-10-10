@@ -34,8 +34,8 @@ bool PACIENTE_apagar(PACIENTE** paciente){
 
 void PACIENTE_imprimir(PACIENTE* paciente){
     if(paciente != NULL){
-        printf("Nome: %s\n", paciente->nome);
-        printf("ID: %d\n", paciente->ID);
+        printf("%s (ID: %d)\n", paciente->nome, paciente->ID);
+
     }
 }
 
