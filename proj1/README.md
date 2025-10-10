@@ -36,6 +36,6 @@ O TAD item, para este projeto, foi adaptado para armazenar um paciente e realiza
 # Interface
 
 # Autores
-Pedro Otavio Mantovani - [numero usp]
+Pedro Otavio Mantovani - 16896987
 Clara Santos de Melo - 16860650
 Maria Fernanda Maia de Souza Pinto - 16889342
