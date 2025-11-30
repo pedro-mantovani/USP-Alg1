@@ -34,7 +34,6 @@ bool SAVE(LISTA *lista, FILA *fila) {
     // fecha o arquivo
     fclose(fp_fila);
 
-
     // -------- Salvando a lista de pacientes + procedimentos --------
 
     // Abre o arquivo (ou cria um caso não existir)
