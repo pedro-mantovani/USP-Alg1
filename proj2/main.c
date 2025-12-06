@@ -236,6 +236,7 @@ int main(){
     registros = AVL_criar();
     fila = HEAP_criar();
 
+    /*
     // Tenta abrir o save file
     FILE* arquivo_savefile = fopen("arquivo.bin", "rb");
 
@@ -260,6 +261,7 @@ int main(){
     else{
         printf("Nenhum arquivo de dados encontrado. Iniciando novo sistema.\n");
     }
+    */
 
     // -------------------------------------------------
 
@@ -292,7 +294,7 @@ int main(){
     // -------------------------------------------------
 
     // Chama função SAVE para salvar os dados em disco
-    SAVE(registros, fila, contador);
+    //SAVE(registros, fila, contador);
 
     // Limpa memória do programa
     AVL_apagar(&registros);

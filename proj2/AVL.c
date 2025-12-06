@@ -66,17 +66,42 @@ int AVL_altura_no(NO* no){
 }
 
 // Imprime os elementos em ordem crescente
-void AVL_nos_em_ordem(NO* raiz){
+void AVL_imprimir_nos_em_ordem(NO* raiz){
     if(raiz != NULL){
-        AVL_nos_em_ordem(raiz->esq);
+        AVL_imprimir_nos_em_ordem(raiz->esq);
         PACIENTE_imprimir(raiz->paciente);
-        AVL_nos_em_ordem(raiz->dir);
+        AVL_imprimir_nos_em_ordem(raiz->dir);
     }
 }
 
 void AVL_imprimir_em_ordem(AVL* arvore){
     if(arvore != NULL)
-        AVL_nos_em_ordem(arvore->raiz);
+        AVL_imprimir_nos_em_ordem(arvore->raiz);
+}
+
+// Função para transformar uma AVL em um vetor
+void AVL_salvar_nos(NO* raiz, PACIENTE** vec, int* i) {
+    if (raiz != NULL) {
+        AVL_salvar_nos(raiz->esq, vec, i);
+        vec[*i] = raiz->paciente;
+        (*i)++;
+        AVL_salvar_nos(raiz->dir, vec, i);
+    }
+}
+
+PACIENTE** AVL_salvar(AVL* arvore) {
+    if (arvore != NULL) {
+        int tamanho = AVL_tamanho(arvore);
+        PACIENTE** vec = malloc(sizeof(PACIENTE*) * tamanho);
+        if(vec == NULL)
+            return NULL;
+
+        int i = 0;
+        AVL_salvar_nos(arvore->raiz, vec, &i);
+
+        return vec;
+    }
+    return NULL;
 }
 
 // Rotações: ajustam ponteiros e atualizam alturas corretamente
@@ -297,8 +322,9 @@ bool AVL_remover(AVL* arv, int ID){
     if(arv == NULL)
         return false;
     // verifica se a ID existe antes de tentar remover
-    if(AVL_busca(arv, ID) == NULL)
+    if(AVL_buscar(arv, ID) == NULL)
         return false;
     arv->raiz = AVL_remover_aux(arv->raiz, ID);
     return true;
 }
+
