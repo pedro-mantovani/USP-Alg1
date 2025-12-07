@@ -6,7 +6,11 @@
 #include "heap.h"
 #include "IO.h"
 
+// Serve para atribuir ordem de chegada
 int contador;
+
+
+// MENU ##### ##############################################################################
 
 void menu(void){
     printf("1. Registrar paciente\n");
@@ -19,17 +23,20 @@ void menu(void){
     printf("8. Sair\n");
 }
 
+
+// REGISTRAR PACIENTE  ######################################################################
+
 void registrar(AVL* registros, HEAP* fila){
     // Lê o ID do paciente
     printf("Digite o ID para cadastro do usuário (número): ");
     int ID;
     if(scanf("%d", &ID) != 1){
-        printf("Erro: ID inválido!\n");
+        printf("\nErro: ID inválido!\n");
         while(getchar() != '\n');
         return;
     }
     if(ID < 0){
-        printf("Erro: Não são permitidos IDs negativos!\n");
+        printf("\nErro: Não são permitidos IDs negativos!\n");
         return;
     }
 
@@ -42,10 +49,10 @@ void registrar(AVL* registros, HEAP* fila){
     // Tal como no projeto 1, se não estiver na fila, o programa vê isso como um paciente que já frequentou o hospital e voltou
     // Sua prioridade e chegada serão atualizadas e ele será inserido na fila de espera, sem precisar ser criado de novo
     if(paciente != NULL){
-        printf("ID já cadastrado.\n");
+        printf("\nID já cadastrado.\n");
         paciente_existente = 1;
         if(HEAP_busca_id(fila, ID)){
-            printf("Esse paciente já está na fila de espera!\n");
+            printf("\nEsse paciente já está na fila de espera!\n");
             return;
         }
     }
@@ -53,14 +60,14 @@ void registrar(AVL* registros, HEAP* fila){
     // Paciente não cadastrado
     else{
         // Lê o nome do paciente
-        printf("Digite o nome do usuário: ");
+        printf("\nDigite o nome do usuário: ");
         getchar();
         fgets(nome, 81, stdin);
         nome[strcspn(nome, "\n")] = '\0';
     }
 
     // Lê prioridade do paciente
-    printf("Defina a prioridade do paciente dentre as opções abaixo:\n");
+    printf("\nDefina a prioridade do paciente dentre as opções abaixo:\n\n");
     printf("1. Emergência\n");
     printf("2. Muito urgente\n");
     printf("3. Urgente\n");
@@ -70,7 +77,7 @@ void registrar(AVL* registros, HEAP* fila){
     
     int prioridade;
     if(scanf("%d", &prioridade) != 1 || prioridade > 5 || prioridade < 1){
-        printf("Erro: entrada inválida!\n");
+        printf("\nErro: entrada inválida!\n");
         return;
     }
 
@@ -81,16 +88,16 @@ void registrar(AVL* registros, HEAP* fila){
     if(paciente_existente == 0){
         paciente = PACIENTE_criar(ID, nome, prioridade, chegada);
         if(paciente == NULL) {
-            printf("Erro ao criar paciente!\n");
+            printf("\nErro ao criar paciente!\n");
             return;
         }
 
         // Insere paciente na AVL
         if(!AVL_inserir(registros, paciente)){
-            printf("Erro ao inserir paciente no sistema!\n");
+            printf("\nErro ao inserir paciente no sistema!\n");
             return;
         }
-        printf("Paciente cadastrado no sistema.\n");
+        printf("\nPaciente cadastrado no sistema.\n");
     }
 
     // Se o paciente já existe, define o estado atual do paciente existente
@@ -101,12 +108,15 @@ void registrar(AVL* registros, HEAP* fila){
 
     // Insere paciente na fila de espera
     if(!HEAP_inserir(fila, paciente)) {
-        printf("Erro: fila de espera cheia!\n");
+        printf("\nErro: fila de espera cheia!\n");
         return;
     }
-    printf("Paciente inserido na fila de espera.\n");
+    printf("\nPaciente inserido na fila de espera.\n");
     contador++;
 }
+
+
+// REMOVER PACIENTE  #######################################################################
 
 void remover(AVL* registros, HEAP* fila){
     // Verifica se a AVL existe e se não está vazia 
@@ -114,7 +124,7 @@ void remover(AVL* registros, HEAP* fila){
         int ID;
         printf("Digite o ID do paciente para remover do registro: ");
         if(scanf("%d", &ID) != 1){
-            printf("Erro: ID inválido!\n");
+            printf("\nErro: ID inválido!\n");
             while(getchar() != '\n');
             return;
         }
@@ -122,21 +132,24 @@ void remover(AVL* registros, HEAP* fila){
         // Verifica se o paciente não está na fila de espera para proceder com a remoção
         if(HEAP_busca_id(fila, ID) == false){
             if(AVL_remover(registros, ID)){
-                printf("Paciente removido do registro.\n");
+                printf("\nPaciente removido do registro.\n");
             }
             // Caso o paciente não exista na AVL
             else{
-                printf("Erro: paciente não encontrado!\n");
+                printf("\nErro: paciente não encontrado!\n");
             }
         }
 
         // Caso o paciente ainda esteja na fila
         else{
-            printf("Erro: paciente ainda não foi atendido!\n");
+            printf("\nErro: paciente ainda não foi atendido!\n");
         }
     }
     else printf("Erro: registo de pacientes está vazio!\n"); 
 }
+
+
+// LISTAR PACIENTES  #######################################################################
 
 void listar(AVL* registros){
     // Verificação
@@ -152,13 +165,16 @@ void listar(AVL* registros){
     }
 }
 
+
+// BUSCAR PACIENTE POR ID  #################################################################
+
 void buscar(AVL* registros){
     // Verificação
     if(registros != NULL && !AVL_vazia(registros)){
         int ID;
         printf("Digite o ID do paciente a ser buscado no registro: ");
         if(scanf("%d", &ID) != 1){
-            printf("Erro: ID inválido!\n");
+            printf("\nErro: ID inválido!\n");
             while(getchar() != '\n');
             return;
         }
@@ -166,25 +182,25 @@ void buscar(AVL* registros){
         // Busca (bônus: mostra o status do paciente, ou seja, se ele está aguargando na fila e qual sua prioridade ou se já saiu do hospital)
         PACIENTE* p = AVL_buscar(registros, ID);
         if(p != NULL){
-            printf("Paciente encontrado: ");
+            printf("\nPaciente encontrado: ");
             PACIENTE_imprimir(p);
             if(PACIENTE_get_prioridade(p) != -1 && PACIENTE_get_chegada(p) != -1){
                 printf("Status: presente na fila do hospital em estado ");
                 int prioridade = PACIENTE_get_prioridade(p);
                 switch(prioridade){
-                    case 1: printf("de emergência."); break;
-                    case 2: printf("muito urgente."); break;
-                    case 3: printf("urgente."); break;
-                    case 4: printf("pouco urgente."); break;
-                    case 5: printf("não urgente."); break;
+                    case 1: printf("de emergência.\n"); break;
+                    case 2: printf("muito urgente.\n"); break;
+                    case 3: printf("urgente.\n"); break;
+                    case 4: printf("pouco urgente.\n"); break;
+                    case 5: printf("não urgente.\n"); break;
                 }
             }
             else{
-                printf("Status: paciente não está presente no hospital no momento.");
+                printf("Status: paciente não está presente no hospital no momento.\n");
             }
         }
         else{
-            printf("Paciente não encontrado no registro.");
+            printf("\nPaciente não encontrado no registro.\n");
         }
     }
 
@@ -194,6 +210,9 @@ void buscar(AVL* registros){
         else if(AVL_vazia(registros)) printf("O arquivo de registros está vazio.\n");
     }
 }
+
+
+// MOSTRAR FILA DE ESPERA  #################################################################
 
 void mostrar_fila(HEAP* fila){
     // Verificação
@@ -209,11 +228,14 @@ void mostrar_fila(HEAP* fila){
     }
 }
 
+
+// DAR ALTA AO PACIENTE  ###################################################################
+
 void dar_alta(HEAP* fila){
     // Tira o paciente da fila de espera
     if(fila != NULL && !HEAP_vazia(fila)){
         PACIENTE* p = HEAP_remover(fila);
-        printf("Paciente \"%s\" (ID: %d) chamado(a) para atendimento.\n", PACIENTE_get_nome(p), PACIENTE_get_ID(p));
+        printf("Paciente \"%s\" (ID: %d) foi chamado(a) para atendimento e recebeu alta.\n", PACIENTE_get_nome(p), PACIENTE_get_ID(p));
         PACIENTE_set_chegada(p, -1);
         PACIENTE_set_prioridade(p, -1);
     }
@@ -226,6 +248,8 @@ void dar_alta(HEAP* fila){
 }
 
 
+// MAIN  ###################################################################################
+
 int main(){
     // Declara os registros (AVL) e fila (HEAP)
     AVL* registros = NULL;
@@ -236,12 +260,13 @@ int main(){
     registros = AVL_criar();
     fila = HEAP_criar();
 
-    /*
+    
     // Tenta abrir o save file
-    FILE* arquivo_savefile = fopen("arquivo.bin", "rb");
+    FILE* arquivo_savefile = fopen("registros.bin", "rb");
 
     // Se existir save file
     if(arquivo_savefile != NULL){
+        // apenas verifica a existência, agora fechamos para o LOAD abrir corretamente
         fclose(arquivo_savefile);
 
         // Chama função LOAD pra realizar o carregamento da AVL e da HEAP
@@ -261,15 +286,14 @@ int main(){
     else{
         printf("Nenhum arquivo de dados encontrado. Iniciando novo sistema.\n");
     }
-    */
 
-    // -------------------------------------------------
+    // -------------------------------------------------------------------------------------
 
-    printf("Sistema do pronto-socorro iniciado. Selecione uma das opções:\n");
+    printf("Sistema do pronto-socorro iniciado. Selecione uma das opções:\n\n");
     menu();
     bool flag = 0;
     while(!flag){
-        printf("\nDigite uma ação de 1 a 8: ");
+        printf("\nDigite uma ação de 1 a 8 (digite 7 para ver o menu): ");
         int acao;
         if(scanf("%d", &acao) == 1){
             printf("\n");
@@ -282,24 +306,25 @@ int main(){
                 case 6: dar_alta(fila); break;
                 case 7: menu(); break;
                 case 8: flag = 1; break;
-                default: printf("Comando não encontrado, digite um número de 1 a 8.\n");
+                default: printf("Comando não encontrado. Digite números apenas de 1 a 8.\n");
             }
         }
         else{
-            printf("Entrada inválida. Digite apenas números no menu.\n");
+            printf("\nEntrada inválida. Digite apenas números no menu.\n");
             while(getchar() != '\n');
         }
     }
 
-    // -------------------------------------------------
+    // -------------------------------------------------------------------------------------
 
     // Chama função SAVE para salvar os dados em disco
-    //SAVE(registros, fila, contador);
+    SAVE(registros, fila, contador);
 
     // Limpa memória do programa
+    
     AVL_apagar(&registros);
     HEAP_apagar(&fila);
 
-    printf("Fim do programa.\n");
+    printf("Fim do programa.\n\n");
     return 0;
 }

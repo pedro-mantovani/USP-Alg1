@@ -69,7 +69,7 @@ int AVL_altura_no(NO* no){
 void AVL_imprimir_nos_em_ordem(NO* raiz){
     if(raiz != NULL){
         AVL_imprimir_nos_em_ordem(raiz->esq);
-        PACIENTE_imprimir(raiz->paciente);
+        PACIENTE_imprimir_com_status(raiz->paciente);
         AVL_imprimir_nos_em_ordem(raiz->dir);
     }
 }
@@ -325,6 +325,7 @@ bool AVL_remover(AVL* arv, int ID){
     if(AVL_buscar(arv, ID) == NULL)
         return false;
     arv->raiz = AVL_remover_aux(arv->raiz, ID);
+    arv->tamanho--;
     return true;
 }
 

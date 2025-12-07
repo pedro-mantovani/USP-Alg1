@@ -11,6 +11,7 @@
     
     bool PACIENTE_apagar(PACIENTE** paciente);
     void PACIENTE_imprimir(PACIENTE* paciente);
+    void PACIENTE_imprimir_com_status(PACIENTE* paciente);
     
     int PACIENTE_get_ID(PACIENTE* paciente);
     const char* PACIENTE_get_nome(PACIENTE* paciente);

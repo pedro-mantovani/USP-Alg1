@@ -36,7 +36,29 @@ bool PACIENTE_apagar(PACIENTE** paciente){
 
 void PACIENTE_imprimir(PACIENTE* paciente){
     if(paciente != NULL){
-        printf("%s (ID: %d)\n", paciente->nome, paciente->ID);
+        printf("%s (ID: %04d)\n", paciente->nome, paciente->ID);
+    }
+}
+void PACIENTE_imprimir_com_status(PACIENTE* paciente){
+    if(paciente != NULL){
+        int len = strlen(paciente->nome);
+        
+        if(len > 20){
+            printf("%.17s... (ID: %04d) || Status: ", paciente->nome, paciente->ID);
+        }
+        else{
+            printf("%-20s (ID: %04d) || Status: ", paciente->nome, paciente->ID);
+        }
+
+        int prioridade = paciente->prioridade;
+        switch(prioridade){
+            case -1: printf("Não presente no hospital\n"); break;
+            case 1: printf("Emergência\n"); break;
+            case 2: printf("Muito urgente\n"); break;
+            case 3: printf("Urgente\n"); break;
+            case 4: printf("Pouco urgente\n"); break;
+            case 5: printf("Não urgente\n"); break;
+        }
     }
 }
 

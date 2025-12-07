@@ -11,7 +11,7 @@ struct heap_{
 };
 
 HEAP *HEAP_criar(void){ //operação de criar heap, inicializa todos os elementos da estrutura 
-    HEAP *fila = malloc(sizeof(HEAP)); //aloca endereço de memória para a esturura
+    HEAP *fila = (HEAP*) malloc(sizeof(HEAP)); //aloca endereço de memória para a esturura
     if(fila){
         fila->fim = 0; // indica que não há elementos na fila, primeira posição disponível para inserção é 0
     }
@@ -19,11 +19,10 @@ HEAP *HEAP_criar(void){ //operação de criar heap, inicializa todos os elemento
 }
 
 void HEAP_apagar(HEAP **fila){ //apaga a estrutura de dados (mas não apaga os pacientes)
-    if(*fila){ //verifica se a fila existe 
+    if(fila && *fila){ //verifica se a fila existe 
         while(!HEAP_vazia(*fila)){ //caso haja elementos na heap, eles serão removidos antes de liberar espaço da estrutura de memória 
             HEAP_remover(*fila); 
         }
-        free((*fila)->fila); //libera o vetor 
         free(*fila); //libera o endereço de memória 
         *fila = NULL; //inicializa como nulo 
     }
@@ -104,45 +103,27 @@ PACIENTE *HEAP_remover(HEAP *fila){ //função recebe a heap e devolve o primeir
     else return NULL; //caso nao seja possível remover o paciente por algum motivo do condicional inicial
 }
 
-PACIENTE *HEAP_topo(HEAP *fila){ //função que retorna o primeiro paciente da fila para atendimento 
-    if(fila && !HEAP_vazia(fila)){
-        PACIENTE *topo = fila->fila[0];
-        return topo;
-    }
-    else return NULL; //caso não haja pacientes na fila ou caso não haja fila 
-}
-
 void HEAP_imprimir(HEAP *fila){ //vai imprimir os elementos da heap por ordem de maior para menor prioridade (maior prioridade: 1 e menor:5)
-    if(!fila){
-        printf("A fila não existe \n");
-    }
-    if(HEAP_vazia(fila)){
-        printf("A fila está vazia \n"); 
-    }
+    if(!fila || HEAP_vazia(fila)) return;
+
     //para imprimir os elementos da heap, será necessário criar uma cópia dela mesma pois removeremos os pacientes em ordem, o que destruíria a heap original
     HEAP *heap_aux = HEAP_criar(); 
+    if (!heap_aux) return;
+
     for(int i = 0; i < fila->fim; i++){
         heap_aux->fila[i] = fila->fila[i];
     } //copiamos, em ordem, um vetor para o outro 
     heap_aux->fim = fila->fim; 
     while(!HEAP_vazia(heap_aux)){ //vai removendo os pacientes em ordem de prioridade 
         PACIENTE *p = HEAP_remover(heap_aux); 
-        PACIENTE_imprimir(p); 
-        printf("\n"); 
+        PACIENTE_imprimir_com_status(p); 
     }
-    free(heap_aux->fila);
     free(heap_aux); //liberamos a memória alocada para a heap auxiliar 
 }
 
 bool HEAP_busca_id(HEAP *fila, int id){ //busca um paciente pelo id. como a heap não é ordenada por id, a busca é sequencial
-    if(fila == NULL){
-        printf("Não há lista \n"); //não sei se vai precisar dessas mensagens aqui ou se elas vão ser implementadas em outra função
-        return false;
-    }
-    if(HEAP_vazia(fila)){
-        printf("Não há pacientes na fila de espera. \n");
-        return false; 
-    }
+    if(fila == NULL || HEAP_vazia(fila)) return false;
+
     for(int i = 0; i < fila->fim; i++){
         if(id == PACIENTE_get_ID(fila->fila[i])){
             return true;
@@ -156,7 +137,7 @@ bool HEAP_cheia(HEAP *fila){
         if(fila->fim == TAM_HEAP){
             return true; 
         }
-    }else return false; 
+    } return false; 
 }
 
 bool HEAP_vazia(HEAP *fila){
@@ -164,7 +145,7 @@ bool HEAP_vazia(HEAP *fila){
         if(fila->fim == 0){
             return true;
         }
-    } else return false;
+    } return false;
 }
 
 int HEAP_tamanho(HEAP *fila){ //devolve o tamanho da fila

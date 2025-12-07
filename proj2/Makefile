@@ -1,5 +1,5 @@
 all:
-	gcc main.c paciente.c AVL.c heap.c -o main -Wall
+	gcc io.c main.c paciente.c AVL.c heap.c -o main -Wall
 
 run:
 	./main

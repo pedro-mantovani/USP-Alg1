@@ -1,155 +1,138 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "IO.h"
 #include "paciente.h"
 #include "heap.h"
 #include "AVL.h"
 
-bool SAVE(LISTA *lista, FILA *fila) {
-    if(lista == NULL || fila == NULL) return false;
+bool SAVE(AVL* avl, HEAP* heap, int contador) {
+    if (avl == NULL || heap == NULL) return false;
 
-    // ----------------------- Salvando a fila -----------------------
+    // SALVANDO A AVL (REGISTROS) ##############################################################
+   
+    FILE* fp_reg = fopen("registros.bin", "wb");
+    if(!fp_reg) return false;
 
-    // Abre o arquivo (ou cria um caso não existir)
-    FILE *fp_fila = fopen("fila.bin", "wb");
-    if(fp_fila == NULL) return false;
+    // Salva contador global e quantidade total de pacientes
+    int total = AVL_tamanho(avl);
+    fwrite(&contador, sizeof(int), 1, fp_reg);
+    fwrite(&total, sizeof(int), 1, fp_reg);
 
-    // Salva a quantidade de pacientes presentes na fila no primeiro int do fila.bin
-    int fila_tamanho = FILA_tamanho(fila);
-    fwrite(&fila_tamanho, sizeof(int), 1, fp_fila);
+    // Transforma AVL em vetor
+    PACIENTE** lista_pacientes = NULL;
+    if(total > 0) lista_pacientes = AVL_salvar(avl);
 
-    // Loop guarda todos os IDs da fila em ordem
-    for(int i = 0; i < fila_tamanho; i++){
+    // Loop para salvar cada paciente
+    for(int i = 0; i < total; i++){
+        PACIENTE* p = lista_pacientes[i];
 
-        // Remove paciente da fila e pega o ID dele
-        PACIENTE* p = FILA_remover(fila);
+        // Pega os dados do paciente
         int id = PACIENTE_get_ID(p);
+        int prioridade = PACIENTE_get_prioridade(p);
+        int chegada = PACIENTE_get_chegada(p);
+        
+        // Prepara pra salvar o nome
+        char nome[81] = {0}; 
+        const char* nome_raw = PACIENTE_get_nome(p);
+        if(nome_raw != NULL) strcpy(nome, nome_raw); 
 
-        // Escreve o ID dele no arquivo
-        fwrite(&id, sizeof(int), 1, fp_fila);
+        // Salva os dados de cada paciente
+        fwrite(&id, sizeof(int), 1, fp_reg);
+        fwrite(nome, sizeof(char), 81, fp_reg);
+        fwrite(&prioridade, sizeof(int), 1, fp_reg);
+        fwrite(&chegada, sizeof(int), 1, fp_reg);
     }
 
-    // fecha o arquivo
+    // libera o vetor auxiliar
+    if(lista_pacientes != NULL) free(lista_pacientes); 
+    fclose(fp_reg);
+
+
+    // SALVANDO A HEAP (FILA) ##################################################################
+
+    FILE* fp_fila = fopen("fila.bin", "wb");
+    if(!fp_fila) return false;
+
+    // Salva o tamanho da fila
+    int tamanho_fila = HEAP_tamanho(heap);
+    fwrite(&tamanho_fila, sizeof(int), 1, fp_fila);
+
+    // Salva apenas os IDs da fila
+    // Como o programa vai fechar mesmo, podemos já ir destruindo a heap pra pegar os itens
+    while(!HEAP_vazia(heap)){
+        PACIENTE* p = HEAP_remover(heap);
+        if(p != NULL){
+            int id = PACIENTE_get_ID(p);
+            fwrite(&id, sizeof(int), 1, fp_fila);
+        }
+    }
+
     fclose(fp_fila);
-
-    // -------- Salvando a lista de pacientes + procedimentos --------
-
-    // Abre o arquivo (ou cria um caso não existir)
-    FILE *fp_lista = fopen("lista.bin", "wb");
-    if (fp_lista == NULL) return false;
-
-    // Salva a quantidade de pacientes registrados na lista no primeiro int do lista.bin
-    int total_pacientes = LISTA_tamanho(lista);
-    fwrite(&total_pacientes, sizeof(int), 1, fp_lista);
-
-    // Loop guarda todos os IDs + procedimentos de cada ID da lista em ordem
-    for(int i = 0; i < total_pacientes; i++){
-
-        // Remove paciente da lista e pega ID + nome
-        PACIENTE *p = LISTA_remover_inicio(lista);
-        int id = PACIENTE_get_ID(p);
-        const char* nome = PACIENTE_get_nome(p);
-
-        // Salva ID e nome do paciente
-        fwrite(&id, sizeof(int), 1, fp_lista);
-        fwrite(nome, sizeof(char), 81, fp_lista);  // 80 + '\0'
-
-        // Pega o histórico desse paciente e o tamanho
-        PILHA* historico = PACIENTE_get_historico(p);
-        int hist_tamanho = pilha_tamanho(historico);
-
-        // Salva a quantidade de procedimentos desse paciente específico em um int logo a seguida de seu ID
-        fwrite(&hist_tamanho, sizeof(int), 1, fp_lista);
-
-        // Cria array temporario e faz um loop para nele salvar a pilha dos procedimentos do paciente na ordem topo->base, por meio da função desempilhar
-        HIST* temp_procedimentos[hist_tamanho];
-        for(int j = 0; j < hist_tamanho; j++){
-            temp_procedimentos[j] = pilha_desempilhar(historico);
-        }
-        
-        // Faz um loop invertido no array temporario para salvar os procedimentos na ordem base->topo 
-        for(int j = hist_tamanho - 1; j >= 0; j--) {
-            fwrite(hist_get(temp_procedimentos[j]), sizeof(char), 101, fp_lista);
-        }
-
-        // Apaga cada procedimento
-        for(int j = 0; j < hist_tamanho; j++){
-            hist_apagar(&temp_procedimentos[j]);
-        }
-        
-        // Apaga o paciente
-        PACIENTE_apagar(&p);
-    }
-
-    // Fecha o arquivo
-    fclose(fp_lista);
-
+    
     return true;
 }
 
 
 
-bool LOAD(LISTA **lista, FILA **fila){
-    if(!*lista || !*fila) return false;
+bool LOAD(AVL** avl, HEAP** heap, int* contador){
+    if(*avl == NULL || *heap == NULL) return false;
 
-    FILE *fp_lista = fopen("lista.bin", "rb");
+    // CARREGA AVL ("registros.bin") ###########################################################
 
-    // Tenta abrir a lista, pula o load se ela não existir
-    if(fp_lista == NULL) return true;
+    FILE* fp_reg = fopen("registros.bin", "rb");
+    
+    // Se for NULL, so sai normalmente
+    if(fp_reg == NULL) return true; 
 
-    // Lê quantos pacientes tem no arquivo através do primeiro int (que armazena a quantidade)
-    int total_pacientes;
-    fread(&total_pacientes, sizeof(int), 1, fp_lista);
+    // Lê o contador global e o total de pacientes
+    int total_pacientes = 0;
+    fread(contador, sizeof(int), 1, fp_reg); // Lê o valor direto para a variável global da main
+    fread(&total_pacientes, sizeof(int), 1, fp_reg);
 
-    // Cria a quantidade de pacientes dentro do programa
+    // Loop para criar cada paciente e inserir na AVL
     for(int i = 0; i < total_pacientes; i++){
-
-        // A cada iteração, lê o próximo ID do arquivo pra criar um paciente correspondente
         int id;
         char nome[81];
-        fread(&id, sizeof(int), 1, fp_lista);
-        fread(nome, sizeof(char), 81, fp_lista);
+        int prioridade;
+        int chegada;
 
-        PACIENTE* p = PACIENTE_criar(id, nome);
+        // Lê os dados na ordem que foram salvos (id, nome, prioridade, chegada)
+        fread(&id, sizeof(int), 1, fp_reg);
+        fread(nome, sizeof(char), 81, fp_reg);
+        fread(&prioridade, sizeof(int), 1, fp_reg);
+        fread(&chegada, sizeof(int), 1, fp_reg);
 
-
-        // Lê a quantidade de procedimentos do paciente da iteração tem
-        int hist_tamanho;
-        fread(&hist_tamanho, sizeof(int), 1, fp_lista);
-        PILHA* historico = PACIENTE_get_historico(p);
-
-        // Lê cada procedimento e adiciona ao histórico do paciente da iteração
-        for(int j = 0; j < hist_tamanho; j++){
-            char procedimento[101];
-            fread(procedimento, sizeof(char), 101, fp_lista);
-            HIST* h = hist_criar(procedimento);
-
-            // Perceba que, como salvamos na ordem base->topo, empilharemos agora de baixo para cima, mantendo a estrutura original
-            pilha_empilhar(historico, h);
-        }
-        LISTA_inserir(*lista, p);
+        // Cria o paciente
+        PACIENTE* p = PACIENTE_criar(id, nome, prioridade, chegada);
+        
+        // Insere na AVL e ela se organiza sozinha
+        if (p != NULL) AVL_inserir(*avl, p);
     }
-    fclose(fp_lista);
+    fclose(fp_reg);
 
-    // Refaz a fila de acordo com o .bin da fila (caso exista fila ativa)
-    FILE *fp_fila = fopen("fila.bin", "rb");
+
+    // CARREGA FILA DE ESPERA ("fila.bin") #####################################################
+
+    FILE* fp_fila = fopen("fila.bin", "rb");
+    
+    // Se não existir arquivo de fila (mas existia de registro), segue em frente
     if(fp_fila != NULL){
+        // Lê o tamanho da fila
+        int tamanho_fila = 0;
+        fread(&tamanho_fila, sizeof(int), 1, fp_fila);
 
-        // Lê quantos IDs estão presentes na fila através do primeiro int (que armazena a quantidade)
-        int fila_tamanho;
-        fread(&fila_tamanho, sizeof(int), 1, fp_fila);
+        // Faz o loop com o tamanho da fila pra inserir todos os pacientes
+        for(int i = 0; i < tamanho_fila; i++){
+            int id_fila;
+            fread(&id_fila, sizeof(int), 1, fp_fila);
 
-        // Busca por cada PACIENTE* na lista a partir do ID lido
-        for(int i = 0; i < fila_tamanho; i++){
-            int id;
-            fread(&id, sizeof(int), 1, fp_fila);
-
-            // Usa a função de busca para encontrar o paciente
-            PACIENTE* paciente_existente = LISTA_busca(*lista, id);
-            if(paciente_existente != NULL){
-
-                // Adiciona paciente na fila se for encontrado
-                FILA_inserir(*fila, paciente_existente);
+            // Busca o paciente que já existe na AVL
+            PACIENTE* p = AVL_buscar(*avl, id_fila);
+            
+            if(p != NULL){
+                // Insere ele na Heap e ela se organiza automaticamente 
+                HEAP_inserir(*heap, p);
             }
         }
         fclose(fp_fila);
