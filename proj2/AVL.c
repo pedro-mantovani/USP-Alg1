@@ -104,20 +104,20 @@ PACIENTE** AVL_salvar(AVL* arvore) {
     return NULL;
 }
 
-// Rotações: ajustam ponteiros e atualizam alturas corretamente
-NO* rodar_direita(NO* A){
+// Rotações
+NO* rotacao_direita(NO* A){
     if(A == NULL || A->esq == NULL) return A;
     NO* B = A->esq;
     A->esq = B->dir;
     B->dir = A;
 
-    // atualiza alturas (A é filho direito de B após rotação)
+    // atualiza alturas
     A->altura = max(AVL_altura_no(A->esq), AVL_altura_no(A->dir)) + 1;
     // B tem a mesma altura
     return B; // nova raiz da subárvore
 }
 
-NO* rodar_esquerda(NO* A){
+NO* rotacao_esquerda(NO* A){
     if(A == NULL || A->dir == NULL) return A;
     NO* B = A->dir;
     A->dir = B->esq;
@@ -130,16 +130,16 @@ NO* rodar_esquerda(NO* A){
 }
 
 // Rotações duplas
-NO* rodar_esquerda_direita(NO* A){
+NO* rotacao_esquerda_direita(NO* A){
     if(A == NULL) return A;
-    A->esq = rodar_esquerda(A->esq);
-    return rodar_direita(A);
+    A->esq = rotacao_esquerda(A->esq);
+    return rotacao_direita(A);
 }
 
-NO* rodar_direita_esquerda(NO* A){
+NO* rotacao_direita_esquerda(NO* A){
     if(A == NULL) return A;
-    A->dir = rodar_direita(A->dir);
-    return rodar_esquerda(A);
+    A->dir = rotacao_direita(A->dir);
+    return rotacao_esquerda(A);
 }
 
 // Função para criar um nó
@@ -155,37 +155,39 @@ NO* criar_no(PACIENTE* paciente){
 }
 
 // Função auxiliar para inserir um nó na árvore
-NO *AVL_inserir_no(NO *raiz, PACIENTE *paciente){
+NO *AVL_inserir_no(NO *raiz, PACIENTE *paciente, int* add){
     // Encontrou a posição
-    if(raiz == NULL)
-        return criar_no(paciente);
-    
-    // Se o ID do paciente for maior vai para a direita, senão para a esquerda (igual vai à esquerda aqui)
-    if(PACIENTE_get_ID(paciente) > PACIENTE_get_ID(raiz->paciente))
-        raiz->dir = AVL_inserir_no(raiz->dir, paciente);
-    else
-        raiz->esq = AVL_inserir_no(raiz->esq, paciente);
-    
-    // Corrige a altura
-    raiz->altura = max(AVL_altura_no(raiz->esq), AVL_altura_no(raiz->dir)) + 1;
-
-    // Corrige o balanceamento
-    int fb = AVL_altura_no(raiz->esq) - AVL_altura_no(raiz->dir);
-    if(fb == -2){
-        // caso direita pesada
-        int fb_dir = AVL_altura_no(raiz->dir->esq) - AVL_altura_no(raiz->dir->dir);
-        if(fb_dir <= 0)
-            raiz = rodar_esquerda(raiz);
-        else
-            raiz = rodar_direita_esquerda(raiz);
+    if(raiz == NULL){
+        raiz = criar_no(paciente);
+        if(raiz)
+            *add = 1;
     }
-    else if(fb == 2){
-        // caso esquerda pesada
-        int fb_esq = AVL_altura_no(raiz->esq->esq) - AVL_altura_no(raiz->esq->dir);
-        if(fb_esq >= 0)
-            raiz = rodar_direita(raiz);
-        else
-            raiz = rodar_esquerda_direita(raiz);
+    // Procura na direita se o ID do paciente é maior que o nó e na esquerda caso contrário
+    else if(PACIENTE_get_ID(paciente) > PACIENTE_get_ID(raiz->paciente))
+        raiz->dir = AVL_inserir_no(raiz->dir, paciente, add);
+    else if(PACIENTE_get_ID(paciente) < PACIENTE_get_ID(raiz->paciente))
+        raiz->esq = AVL_inserir_no(raiz->esq, paciente, add);
+    
+    if(raiz != NULL){
+        // Corrige a altura
+        raiz->altura = max(AVL_altura_no(raiz->esq), AVL_altura_no(raiz->dir)) + 1;
+
+        // Corrige o balanceamento
+        int fb = AVL_altura_no(raiz->esq) - AVL_altura_no(raiz->dir);
+        if(fb == -2){
+            int fb_dir = AVL_altura_no(raiz->dir->esq) - AVL_altura_no(raiz->dir->dir);
+            if(fb_dir <= 0)
+                raiz = rotacao_esquerda(raiz);
+            else
+                raiz = rotacao_direita_esquerda(raiz);
+        }
+        else if(fb == 2){
+            int fb_esq = AVL_altura_no(raiz->esq->esq) - AVL_altura_no(raiz->esq->dir);
+            if(fb_esq >= 0)
+                raiz = rotacao_direita(raiz);
+            else
+                raiz = rotacao_esquerda_direita(raiz);
+        }
     }
 
     return raiz;
@@ -194,22 +196,24 @@ NO *AVL_inserir_no(NO *raiz, PACIENTE *paciente){
 // Função principal para inserir um paciente
 bool AVL_inserir(AVL *arv, PACIENTE *paciente){
     if(arv == NULL || paciente == NULL) return false;
-    arv->raiz = AVL_inserir_no(arv->raiz, paciente);
-    if(arv->raiz != NULL){
+    int add = 0;
+    arv->raiz = AVL_inserir_no(arv->raiz, paciente, &add);
+    if(add)
         arv->tamanho ++;
-        return 1;
-    }
-    else return 0;
+    return add;
 }
 
 // Função auxiliar para realizar uma busca
 PACIENTE* AVL_busca_no(NO* raiz, int ID){
+    // Não encontrou
     if(raiz == NULL)
         return NULL;
     
+    // Encontrou
     if(ID == PACIENTE_get_ID(raiz->paciente))
         return raiz->paciente;
     
+    // Procura na direita se o ID do paciente é maior que o nó e na esquerda caso contrário
     if(ID > PACIENTE_get_ID(raiz->paciente))
         return AVL_busca_no(raiz->dir, ID);
     else
@@ -226,33 +230,11 @@ PACIENTE* AVL_buscar(AVL* arv, int ID){
 Raciocínio da remoção:
 - 0 filhos: libera nó
 - 1 filho: substitui pelo filho
-- 2 filhos: troca com predecessor (máx da subárvore esquerda)
+- 2 filhos: troca com o máximo da subárvore esquerda
 */
 
-// Função auxiliar para o caso do nó a ser removido ter dois filhos
-void troca_max_esq(NO* troca, NO* raiz, NO* ant){
-    // troca percorre para a direita até o máximo
-    if(troca->dir != NULL){
-        troca_max_esq(troca->dir, raiz, troca);
-        return;
-    }
-
-    // troca é o nó máximo da subárvore esquerda
-    if(raiz == ant)
-        ant->esq = troca->esq;
-    else
-        ant->dir = troca->esq;
-
-    // substitui o paciente da raiz pelo paciente do troca
-    PACIENTE *antigo = raiz->paciente;
-    raiz->paciente = troca->paciente; // transferimos o ponteiro do paciente
-    troca->paciente = NULL;       // evita double-free do paciente quando free(troca)
-    PACIENTE_apagar(&antigo);     // apaga o paciente antigo da raiz
-    free(troca);
-    troca = NULL;
-}
-
-NO* AVL_remover_aux(NO *raiz, int ID){
+// Função auxiliar da remoção
+NO* AVL_remover_aux(NO *raiz, int ID, bool remover){
 
     // Não encontrado
     if(raiz == NULL)
@@ -268,64 +250,67 @@ NO* AVL_remover_aux(NO *raiz, int ID){
             // substitui raiz pelo seu único filho (ou NULL se folha)
             raiz = substituto;
 
-            // libera o nó antigo (e seu paciente)
-            PACIENTE_apagar(&(aux->paciente));
+            if(remover) // Apaga o paciente
+                PACIENTE_apagar(&(aux->paciente));
+            
+            // Libera o nó
             free(aux);
             aux = NULL;
-
-            // se ficou vazio retorna imediatamente (evita acessar campos de raiz == NULL)
-            if(raiz == NULL)
-                return NULL;
         }
 
         // Ambos os filhos: troca pelo máximo da esquerda
         else {
-            troca_max_esq(raiz->esq, raiz, raiz);
-            // após troca, continuação: precisamos rebalancear essa raiz (já com novo paciente)
+            NO* aux = raiz->esq;
+            // Encontra maior valor da sub-arvore esquerda
+            while(aux->dir != NULL)
+                aux = aux->dir;
+
+            // Removendo o paciente
+            PACIENTE_apagar(&(raiz->paciente));
+
+            // Troca raiz e aux
+            raiz->paciente = aux->paciente;
+
+            // Remove o nó auxiliar
+            raiz->esq = AVL_remover_aux(raiz->esq, PACIENTE_get_ID(raiz->paciente), false);
         }
     }
 
-    // Ainda tem lugar para procurar (caso não encontrou ainda)
+    // Caso não tenha encontrado continua procurando
     else if(ID < PACIENTE_get_ID(raiz->paciente))
-        raiz->esq = AVL_remover_aux(raiz->esq, ID);
+        raiz->esq = AVL_remover_aux(raiz->esq, ID, true);
     else
-        raiz->dir = AVL_remover_aux(raiz->dir, ID);
- 
-    // Se raiz se tornou NULL por.remoção em baixo, retorna
-    if(raiz == NULL)
-        return NULL;
+        raiz->dir = AVL_remover_aux(raiz->dir, ID, true);
 
-    // Arrumando a altura
+    // Arruma a altura
     raiz->altura = max(AVL_altura_no(raiz->esq), AVL_altura_no(raiz->dir)) + 1;
 
-    // Arrumando o balanceamento
+    // Arruma o balanceamento
     int fb = AVL_altura_no(raiz->esq) - AVL_altura_no(raiz->dir);
     if(fb == -2){
         int fb_dir = AVL_altura_no(raiz->dir->esq) - AVL_altura_no(raiz->dir->dir);
         if(fb_dir <= 0)
-            raiz = rodar_esquerda(raiz);
+            raiz = rotacao_esquerda(raiz);
         else
-            raiz = rodar_direita_esquerda(raiz);
+            raiz = rotacao_direita_esquerda(raiz);
     }
     else if(fb == 2){
         int fb_esq = AVL_altura_no(raiz->esq->esq) - AVL_altura_no(raiz->esq->dir);
         if(fb_esq >= 0)
-            raiz = rodar_direita(raiz);
+            raiz = rotacao_direita(raiz);
         else
-            raiz = rodar_esquerda_direita(raiz);
+            raiz = rotacao_esquerda_direita(raiz);
     }
 
     return raiz;
 }
 
 bool AVL_remover(AVL* arv, int ID){
-    if(arv == NULL)
-        return false;
-    // verifica se a ID existe antes de tentar remover
+    // verifica se a árvore e o ID existem antes de tentar remover
     if(AVL_buscar(arv, ID) == NULL)
         return false;
-    arv->raiz = AVL_remover_aux(arv->raiz, ID);
+    
+    arv->raiz = AVL_remover_aux(arv->raiz, ID, true);
     arv->tamanho--;
     return true;
 }
-

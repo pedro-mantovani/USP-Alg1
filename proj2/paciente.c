@@ -5,12 +5,15 @@
 #include "paciente.h"
 #include "AVL.h"
 #include "heap.h"
+#include "pilha.h"
+#include "hist.h"
 
 struct paciente_ {
     int ID;
     char nome[81];
     int prioridade;
     int chegada;
+    PILHA* historico;
 };
 
 PACIENTE* PACIENTE_criar(int ID, char nome[], int prioridade, int chegada){
@@ -20,6 +23,7 @@ PACIENTE* PACIENTE_criar(int ID, char nome[], int prioridade, int chegada){
         strcpy(paciente->nome, nome); // atribui o nome
         paciente->prioridade = prioridade; // atribui prioridade
         paciente->chegada = chegada; // atribui ordem de chegada
+        paciente->historico = pilha_criar(); // cria o histórico
         return paciente;
     }
     return NULL;
@@ -27,6 +31,7 @@ PACIENTE* PACIENTE_criar(int ID, char nome[], int prioridade, int chegada){
 
 bool PACIENTE_apagar(PACIENTE** paciente){
     if(paciente != NULL && *paciente != NULL){
+        pilha_apagar(&(*paciente)->historico);
         free(*paciente);
         *paciente = NULL;
         return true;
@@ -39,6 +44,7 @@ void PACIENTE_imprimir(PACIENTE* paciente){
         printf("%s (ID: %04d)\n", paciente->nome, paciente->ID);
     }
 }
+
 void PACIENTE_imprimir_com_status(PACIENTE* paciente){
     if(paciente != NULL){
         int len = strlen(paciente->nome);
@@ -59,7 +65,17 @@ void PACIENTE_imprimir_com_status(PACIENTE* paciente){
             case 4: printf("Pouco urgente\n"); break;
             case 5: printf("Não urgente\n"); break;
         }
+
+        pilha_print(paciente->historico);
+
     }
+}
+
+PILHA* PACIENTE_get_historico(PACIENTE* paciente){
+    if(paciente != NULL){
+        return paciente->historico;
+    }
+    return NULL;
 }
 
 int PACIENTE_get_ID(PACIENTE* paciente){

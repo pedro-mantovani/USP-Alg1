@@ -5,21 +5,22 @@
 #include "paciente.h"
 #include "heap.h"
 #include "AVL.h"
+#include "pilha.h"
 
 bool SAVE(AVL* avl, HEAP* heap, int contador) {
-    if (avl == NULL || heap == NULL) return false;
 
-    // SALVANDO A AVL (REGISTROS) ##############################################################
+    if (avl == NULL || heap == NULL) return false;
+    // SALVANDO A AVL (REGISTROS)
    
     FILE* fp_reg = fopen("registros.bin", "wb");
     if(!fp_reg) return false;
 
-    // Salva contador global e quantidade total de pacientes
+    // Salva o contador e quantidade total de pacientes
     int total = AVL_tamanho(avl);
     fwrite(&contador, sizeof(int), 1, fp_reg);
     fwrite(&total, sizeof(int), 1, fp_reg);
 
-    // Transforma AVL em vetor
+    // Transforma AVL em vetor para iterar linearmente
     PACIENTE** lista_pacientes = NULL;
     if(total > 0) lista_pacientes = AVL_salvar(avl);
 
@@ -27,29 +28,69 @@ bool SAVE(AVL* avl, HEAP* heap, int contador) {
     for(int i = 0; i < total; i++){
         PACIENTE* p = lista_pacientes[i];
 
-        // Pega os dados do paciente
+        // Pega os dados básicos do paciente
         int id = PACIENTE_get_ID(p);
         int prioridade = PACIENTE_get_prioridade(p);
         int chegada = PACIENTE_get_chegada(p);
         
-        // Prepara pra salvar o nome
+        // Prepara pra salvar o nome (garante array limpo)
         char nome[81] = {0}; 
         const char* nome_raw = PACIENTE_get_nome(p);
-        if(nome_raw != NULL) strcpy(nome, nome_raw); 
+        if(nome_raw != NULL) strncpy(nome, nome_raw, 80); 
 
-        // Salva os dados de cada paciente
+        // Escreve os dados básicos
         fwrite(&id, sizeof(int), 1, fp_reg);
         fwrite(nome, sizeof(char), 81, fp_reg);
         fwrite(&prioridade, sizeof(int), 1, fp_reg);
         fwrite(&chegada, sizeof(int), 1, fp_reg);
+
+        // --- MANIPULAÇÃO DO HISTÓRICO (PILHA) ---
+        PILHA* historico = PACIENTE_get_historico(p);
+        int hist_tamanho = pilha_tamanho(historico);
+
+        // Salva o tamanho do histórico
+        fwrite(&hist_tamanho, sizeof(int), 1, fp_reg);
+
+        if (hist_tamanho > 0) {
+            // Cria vetor temporário para armazenar os ponteiros do histórico
+            // (Usando VLA pois o tamanho é pequeno, max 10 segundo especificações)
+            HIST* temp_procedimentos[hist_tamanho];
+
+            // 1. Desempilha tudo para o vetor temporário para poder ler
+            // O topo da pilha vai para o índice 0 do vetor
+            for(int j = 0; j < hist_tamanho; j++){
+                temp_procedimentos[j] = pilha_desempilhar(historico);
+            }
+            
+            // 2. Salva no arquivo na ordem cronológica (Base -> Topo)
+            // Isso facilita o carregamento (LOAD) depois
+            for(int j = hist_tamanho - 1; j >= 0; j--) {
+                char* proc_texto = hist_get(temp_procedimentos[j]);
+                // Garante que escreve algo válido mesmo se for NULL
+                if (proc_texto) 
+                    fwrite(proc_texto, sizeof(char), 101, fp_reg);
+                else 
+                    fwrite("", sizeof(char), 101, fp_reg); 
+            }
+
+            // 3. REEMPILHA os itens de volta no paciente!
+            // Isso restaura a memória para que a main.c possa apagar corretamente depois.
+            // A ordem de empilhar deve ser do Fundo para o Topo, para restaurar a ordem original.
+            for(int j = hist_tamanho - 1; j >= 0; j--){
+                pilha_empilhar(historico, temp_procedimentos[j]);
+            }
+        }
+        
+        // CORREÇÃO CRÍTICA: Não chamamos PACIENTE_apagar aqui.
+        // A responsabilidade de limpar a memória é da AVL_apagar na main.
     }
 
-    // libera o vetor auxiliar
+    // Libera apenas o vetor auxiliar de ponteiros criado pelo AVL_salvar
+    // Os pacientes em si continuam vivos na memória apontados pela AVL
     if(lista_pacientes != NULL) free(lista_pacientes); 
     fclose(fp_reg);
 
-
-    // SALVANDO A HEAP (FILA) ##################################################################
+    // SALVANDO A HEAP (FILA DE ESPERA)
 
     FILE* fp_fila = fopen("fila.bin", "wb");
     if(!fp_fila) return false;
@@ -59,7 +100,8 @@ bool SAVE(AVL* avl, HEAP* heap, int contador) {
     fwrite(&tamanho_fila, sizeof(int), 1, fp_fila);
 
     // Salva apenas os IDs da fila
-    // Como o programa vai fechar mesmo, podemos já ir destruindo a heap pra pegar os itens
+    // Aqui consumimos a estrutura da Heap (destrutivo para a heap, seguro para os pacientes)
+    // Isso é aceitável pois o programa está encerrando.
     while(!HEAP_vazia(heap)){
         PACIENTE* p = HEAP_remover(heap);
         if(p != NULL){
@@ -74,64 +116,79 @@ bool SAVE(AVL* avl, HEAP* heap, int contador) {
 }
 
 
-
 bool LOAD(AVL** avl, HEAP** heap, int* contador){
     if(*avl == NULL || *heap == NULL) return false;
 
-    // CARREGA AVL ("registros.bin") ###########################################################
+    // CARREGA AVL ("registros.bin")
 
     FILE* fp_reg = fopen("registros.bin", "rb");
     
-    // Se for NULL, so sai normalmente
+    // Se arquivo não existe, apenas retorna true (primeira execução)
     if(fp_reg == NULL) return true; 
 
     // Lê o contador global e o total de pacientes
     int total_pacientes = 0;
-    fread(contador, sizeof(int), 1, fp_reg); // Lê o valor direto para a variável global da main
-    fread(&total_pacientes, sizeof(int), 1, fp_reg);
+    if (fread(contador, sizeof(int), 1, fp_reg) != 1) { fclose(fp_reg); return false; }
+    if (fread(&total_pacientes, sizeof(int), 1, fp_reg) != 1) { fclose(fp_reg); return false; }
 
-    // Loop para criar cada paciente e inserir na AVL
+    // Loop para recriar cada paciente
     for(int i = 0; i < total_pacientes; i++){
         int id;
         char nome[81];
         int prioridade;
         int chegada;
 
-        // Lê os dados na ordem que foram salvos (id, nome, prioridade, chegada)
         fread(&id, sizeof(int), 1, fp_reg);
         fread(nome, sizeof(char), 81, fp_reg);
         fread(&prioridade, sizeof(int), 1, fp_reg);
         fread(&chegada, sizeof(int), 1, fp_reg);
 
-        // Cria o paciente
         PACIENTE* p = PACIENTE_criar(id, nome, prioridade, chegada);
+
+        int hist_tamanho;
+        fread(&hist_tamanho, sizeof(int), 1, fp_reg);
         
-        // Insere na AVL e ela se organiza sozinha
-        if (p != NULL) AVL_inserir(*avl, p);
+        if (p != NULL) {
+            PILHA* historico = PACIENTE_get_historico(p);
+
+            // Lê cada procedimento e adiciona ao histórico
+            for(int j = 0; j < hist_tamanho; j++){
+                char procedimento[101];
+                fread(procedimento, sizeof(char), 101, fp_reg);
+                
+                HIST* h = hist_criar(procedimento);
+                // Como salvamos da base para o topo, vamos empilhando conforme lemos
+                // para restaurar a ordem correta (o último lido será o topo)
+                pilha_empilhar(historico, h);
+            }
+            
+            // Insere na AVL
+            AVL_inserir(*avl, p);
+        } else {
+            // Se falhou criar paciente, precisa pular os bytes do histórico no arquivo
+            // para não corromper a leitura do próximo paciente
+            fseek(fp_reg, hist_tamanho * 101, SEEK_CUR);
+        }
     }
     fclose(fp_reg);
 
 
-    // CARREGA FILA DE ESPERA ("fila.bin") #####################################################
+    // CARREGA FILA DE ESPERA ("fila.bin")
 
     FILE* fp_fila = fopen("fila.bin", "rb");
     
-    // Se não existir arquivo de fila (mas existia de registro), segue em frente
     if(fp_fila != NULL){
-        // Lê o tamanho da fila
         int tamanho_fila = 0;
         fread(&tamanho_fila, sizeof(int), 1, fp_fila);
 
-        // Faz o loop com o tamanho da fila pra inserir todos os pacientes
         for(int i = 0; i < tamanho_fila; i++){
             int id_fila;
             fread(&id_fila, sizeof(int), 1, fp_fila);
 
-            // Busca o paciente que já existe na AVL
+            // Busca o ponteiro do paciente que já foi criado na AVL
             PACIENTE* p = AVL_buscar(*avl, id_fila);
             
             if(p != NULL){
-                // Insere ele na Heap e ela se organiza automaticamente 
                 HEAP_inserir(*heap, p);
             }
         }

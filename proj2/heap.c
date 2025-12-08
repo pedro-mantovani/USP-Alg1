@@ -4,7 +4,9 @@
 #include "paciente.h"
 #include "heap.h"
 
-//implementação sequencial da heap, que aproveita o uso dos índices do vetor para facilitar a busca e estabelecer a relação de ordem presente na heap 
+
+//implementação sequencial da heap, que aproveita o uso dos índices do vetor para manipular os elementos e estabelecer a relação de ordem presente na heap 
+//como a heap é uma estrutura de dados não estável (elementos com a mesma prioridade podem trocar de posição no vetor nas operações de ajuste da heap), foi necessário utilizar um parâmetro de ordem de chegada na struct paciente, para "desempatar" pacientes que possuem a mesma prioridade 
 struct heap_{
     PACIENTE *fila[TAM_HEAP]; //vetor de pacientes que representará a fila, de tamanho máximo definido
     int fim; //indica a posição livre para inserção 
@@ -38,7 +40,9 @@ void HEAP_fixup(HEAP *fila){ //função auxiliar de ajustar a heap para inserç�
     if(fila){ 
         int ultimo = fila->fim - 1; //posição do último elemento da heap
         int pai = (ultimo - 1)/2; //posição do pai do ultimo elemento
-        while(ultimo > 0 && PACIENTE_get_prioridade(fila->fila[ultimo]) < PACIENTE_get_prioridade(fila->fila[pai])){
+        while(ultimo > 0 && (PACIENTE_get_prioridade(fila->fila[ultimo]) < PACIENTE_get_prioridade(fila->fila[pai]) ||
+               (PACIENTE_get_prioridade(fila->fila[ultimo]) == PACIENTE_get_prioridade(fila->fila[pai]) &&
+                PACIENTE_get_chegada(fila->fila[ultimo]) < PACIENTE_get_chegada(fila->fila[pai])))){ //se o filho for menor que o pai OU se eles forem iguais (critério de ordem de chegada)
             HEAP_swap(fila, ultimo, pai);
             ultimo = pai;
             pai = (ultimo - 1)/2;
@@ -58,8 +62,15 @@ bool HEAP_inserir(HEAP *fila, PACIENTE *paciente){
 int menor_filho(HEAP *fila, int dir, int esq){ //encontra o menor filho dado um índice do vetor, retorna o índice do menor 
     if(PACIENTE_get_prioridade(fila->fila[dir]) < PACIENTE_get_prioridade(fila->fila[esq])){
         return dir;
-    }else{
+    }else if (PACIENTE_get_prioridade(fila->fila[dir]) > PACIENTE_get_prioridade(fila->fila[esq])){
         return esq; 
+    }else{
+     //caso tiverem a mesma prioridade 
+        if(PACIENTE_get_chegada(fila->fila[dir]) < PACIENTE_get_chegada(fila->fila[esq])){
+            return dir;
+        } else {
+            return esq;
+        }
     }
 }
 
@@ -80,7 +91,8 @@ void HEAP_fixdown(HEAP *fila){ //função auxiliar que ajusta a heap para remoç
             }else{
                 menor = esq; //só há o filho esquerdo 
             }
-            if(PACIENTE_get_prioridade(fila->fila[pai]) <= PACIENTE_get_prioridade(fila->fila[menor])){ //a ordem da heap já está correta 
+            if(PACIENTE_get_prioridade(fila->fila[pai]) < PACIENTE_get_prioridade(fila->fila[menor])  || (PACIENTE_get_prioridade(fila->fila[pai]) == PACIENTE_get_prioridade(fila->fila[menor]) && 
+                PACIENTE_get_chegada(fila->fila[pai]) <= PACIENTE_get_chegada(fila->fila[menor]))){ //a ordem da heap já está correta (considerando ordem de chegada)
                 break;
             }
             HEAP_swap(fila, pai, menor); //se não, fazemos a troca 

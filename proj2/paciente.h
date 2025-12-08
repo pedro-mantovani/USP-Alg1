@@ -3,6 +3,7 @@
     #include <stdbool.h>
     #include <stdlib.h>
     #include <stdio.h>
+    #include "pilha.h"
     typedef struct paciente_ PACIENTE;
 
     
@@ -17,6 +18,7 @@
     const char* PACIENTE_get_nome(PACIENTE* paciente);
     int PACIENTE_get_prioridade(PACIENTE* paciente);
     int PACIENTE_get_chegada(PACIENTE* paciente);
+    PILHA* PACIENTE_get_historico(PACIENTE* paciente);
 
     bool PACIENTE_set_ID(PACIENTE* paciente, int ID);
     bool PACIENTE_set_nome(PACIENTE* paciente, char nome[]);

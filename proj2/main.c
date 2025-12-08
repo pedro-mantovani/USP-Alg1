@@ -5,10 +5,8 @@
 #include "AVL.h"
 #include "heap.h"
 #include "IO.h"
-
-// Serve para atribuir ordem de chegada
-int contador;
-
+#include "hist.h"
+#include "pilha.h"
 
 // MENU ##### ##############################################################################
 
@@ -19,14 +17,15 @@ void menu(void){
     printf("4. Buscar paciente por ID\n");
     printf("5. Mostrar fila de espera\n");
     printf("6. Dar alta ao paciente\n");
-    printf("7. Mostrar menu\n");
-    printf("8. Sair\n");
+    printf("7. Adicionar procedimento ao histórico médico\n");
+    printf("8. Desfazer procedimento do histórico médico\n");
+    printf("9. Mostrar menu\n");
+    printf("10. Sair\n");
 }
-
 
 // REGISTRAR PACIENTE  ######################################################################
 
-void registrar(AVL* registros, HEAP* fila){
+void registrar(AVL* registros, HEAP* fila, int* contador){
     // Lê o ID do paciente
     printf("Digite o ID para cadastro do usuário (número): ");
     int ID;
@@ -82,7 +81,7 @@ void registrar(AVL* registros, HEAP* fila){
     }
 
     // Lê ordem de chegada do paciente a partir do contador global
-    int chegada = contador;
+    int chegada = *contador;
 
     // Cria novo paciente já definindo sua prioriade e ordem de chegada para inserir na lista
     if(paciente_existente == 0){
@@ -112,7 +111,7 @@ void registrar(AVL* registros, HEAP* fila){
         return;
     }
     printf("\nPaciente inserido na fila de espera.\n");
-    contador++;
+    (*contador)++;
 }
 
 
@@ -147,7 +146,6 @@ void remover(AVL* registros, HEAP* fila){
     }
     else printf("Erro: registo de pacientes está vazio!\n"); 
 }
-
 
 // LISTAR PACIENTES  #######################################################################
 
@@ -247,6 +245,63 @@ void dar_alta(HEAP* fila){
     }
 }
 
+void adicionar_procedimento(AVL* registros, HEAP* fila){
+    // Pergunta o ID do paciente
+    printf("Digite o ID do paciente para adicionar um procedimento: ");
+    int ID;
+    if(scanf("%d", &ID) != 1){
+        printf("Erro: ID inválido!\n");
+        while(getchar() != '\n');
+        return;
+    }
+
+    // Verifica se o paciente possui cadastro
+    PACIENTE* paciente = AVL_buscar(registros, ID);
+    if(paciente == NULL){
+        printf("Erro: paciente não encontrado!\n");
+        return;
+    }
+    // Pega o histórico do paciente e adiciona um procedimento
+    PILHA* hist = PACIENTE_get_historico(paciente);
+    char procedimento[101];
+    printf("Digite o procedimento que será adicionado: ");
+    getchar();
+    fgets(procedimento, 101, stdin);
+    procedimento[strcspn(procedimento, "\n")] = '\0';
+    HIST* proc = hist_criar(procedimento);
+    if(pilha_empilhar(hist, proc)){
+        printf("Procedimento inserido com sucesso.\n");
+        return;
+    }
+    printf("Erro ao inserir procedimento!\n");
+}
+
+void desfazer_procedimento(AVL* registros){
+    // Encontra o paciente que terá o último procedimento desfeito
+    printf("Digite o ID do paciente para desfazer um procedimento: ");
+    int ID;
+    if(scanf("%d", &ID) != 1){
+        printf("Erro: ID inválido!\n");
+        while(getchar() != '\n');
+        return;
+    }
+    PACIENTE* paciente = AVL_buscar(registros, ID);
+    if(paciente == NULL){
+        printf("Erro: paciente não encontrado!\n");
+        return;
+    }
+    // Pega o histórico do paciente
+    PILHA* hist = PACIENTE_get_historico(paciente);
+    // Retira o último procedimento e informa qual era para o usuário
+    HIST* procedimento = pilha_desempilhar(hist);
+    if(procedimento == NULL)
+        printf("Nenhum procedimento a ser retirado.\n");
+    else{
+        printf("Procedimento \"%s\" retirado.\n", hist_get(procedimento));
+        hist_apagar(&procedimento);
+    }
+    return;
+}
 
 // MAIN  ###################################################################################
 
@@ -254,7 +309,7 @@ int main(){
     // Declara os registros (AVL) e fila (HEAP)
     AVL* registros = NULL;
     HEAP* fila = NULL;
-    contador = 0;
+    int contador = 0;
 
     // Cria as estruturas vazias para carregar o conteudo do save file delas ou para iniciá-las vazias caso ainda não exista save file
     registros = AVL_criar();
@@ -293,20 +348,22 @@ int main(){
     menu();
     bool flag = 0;
     while(!flag){
-        printf("\nDigite uma ação de 1 a 8 (digite 7 para ver o menu): ");
+        printf("\nDigite uma ação de 1 a 10 (digite 9 para ver o menu): ");
         int acao;
         if(scanf("%d", &acao) == 1){
             printf("\n");
             switch(acao){
-                case 1: registrar(registros, fila); break;
+                case 1: registrar(registros, fila, &contador); break;
                 case 2: remover(registros, fila); break;
                 case 3: listar(registros); break;
                 case 4: buscar(registros); break;
                 case 5: mostrar_fila(fila); break;
                 case 6: dar_alta(fila); break;
-                case 7: menu(); break;
-                case 8: flag = 1; break;
-                default: printf("Comando não encontrado. Digite números apenas de 1 a 8.\n");
+                case 7: adicionar_procedimento(registros, fila); break;
+                case 8: desfazer_procedimento(registros); break;
+                case 9: menu(); break;
+                case 10: flag = 1; break;
+                default: printf("Comando não encontrado. Digite números apenas de 1 a 10.\n");
             }
         }
         else{
