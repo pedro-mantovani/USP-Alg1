@@ -8,8 +8,7 @@
 #include "hist.h"
 #include "pilha.h"
 
-// MENU ##### ##############################################################################
-
+// Função para imprimir o menu
 void menu(void){
     printf("1. Registrar paciente\n");
     printf("2. Remover paciente\n");
@@ -23,9 +22,9 @@ void menu(void){
     printf("10. Sair\n");
 }
 
-// REGISTRAR PACIENTE  ######################################################################
-
+// Função para registrar um paciente
 void registrar(AVL* registros, HEAP* fila, int* contador){
+
     // Lê o ID do paciente
     printf("Digite o ID para cadastro do usuário (número): ");
     int ID;
@@ -114,10 +113,9 @@ void registrar(AVL* registros, HEAP* fila, int* contador){
     (*contador)++;
 }
 
-
-// REMOVER PACIENTE  #######################################################################
-
+// Função para remover um paciente dos registros
 void remover(AVL* registros, HEAP* fila){
+
     // Verifica se a AVL existe e se não está vazia 
     if(registros && !AVL_vazia(registros)){
         int ID;
@@ -147,10 +145,10 @@ void remover(AVL* registros, HEAP* fila){
     else printf("Erro: registo de pacientes está vazio!\n"); 
 }
 
-// LISTAR PACIENTES  #######################################################################
-
+// Função para listar todos os pacientes cadastrados no sistema
 void listar(AVL* registros){
-    // Verificação
+
+    // Verifica se os registros existem
     if(registros != NULL && !AVL_vazia(registros)){
         printf("Registros:\n");
         AVL_imprimir_em_ordem(registros);
@@ -163,11 +161,10 @@ void listar(AVL* registros){
     }
 }
 
-
-// BUSCAR PACIENTE POR ID  #################################################################
-
+// Função para buscar um paciente nos registros com seu ID
 void buscar(AVL* registros){
-    // Verificação
+
+    // Verifica se os registros existem
     if(registros != NULL && !AVL_vazia(registros)){
         int ID;
         printf("Digite o ID do paciente a ser buscado no registro: ");
@@ -177,25 +174,13 @@ void buscar(AVL* registros){
             return;
         }
 
-        // Busca (bônus: mostra o status do paciente, ou seja, se ele está aguargando na fila e qual sua prioridade ou se já saiu do hospital)
+        // Busca pelo paciente
         PACIENTE* p = AVL_buscar(registros, ID);
+
+        // Imprime seus dados
         if(p != NULL){
             printf("\nPaciente encontrado: ");
-            PACIENTE_imprimir(p);
-            if(PACIENTE_get_prioridade(p) != -1 && PACIENTE_get_chegada(p) != -1){
-                printf("Status: presente na fila do hospital em estado ");
-                int prioridade = PACIENTE_get_prioridade(p);
-                switch(prioridade){
-                    case 1: printf("de emergência.\n"); break;
-                    case 2: printf("muito urgente.\n"); break;
-                    case 3: printf("urgente.\n"); break;
-                    case 4: printf("pouco urgente.\n"); break;
-                    case 5: printf("não urgente.\n"); break;
-                }
-            }
-            else{
-                printf("Status: paciente não está presente no hospital no momento.\n");
-            }
+            PACIENTE_imprimir_com_status(p);
         }
         else{
             printf("\nPaciente não encontrado no registro.\n");
@@ -209,11 +194,10 @@ void buscar(AVL* registros){
     }
 }
 
-
-// MOSTRAR FILA DE ESPERA  #################################################################
-
+// Função para imprimir a fila de espera
 void mostrar_fila(HEAP* fila){
-    // Verificação
+
+    // Verifica se a fila existe
     if(fila != NULL && !HEAP_vazia(fila)){
         printf("Fila de espera:\n");
         HEAP_imprimir(fila);
@@ -226,10 +210,9 @@ void mostrar_fila(HEAP* fila){
     }
 }
 
-
-// DAR ALTA AO PACIENTE  ###################################################################
-
+// Função para dar alta para um paciente (o tirar da fila de espera)
 void dar_alta(HEAP* fila){
+
     // Tira o paciente da fila de espera
     if(fila != NULL && !HEAP_vazia(fila)){
         PACIENTE* p = HEAP_remover(fila);
@@ -245,7 +228,9 @@ void dar_alta(HEAP* fila){
     }
 }
 
+// Função para adicionar um procedimento a um paciente
 void adicionar_procedimento(AVL* registros, HEAP* fila){
+
     // Pergunta o ID do paciente
     printf("Digite o ID do paciente para adicionar um procedimento: ");
     int ID;
@@ -261,6 +246,7 @@ void adicionar_procedimento(AVL* registros, HEAP* fila){
         printf("Erro: paciente não encontrado!\n");
         return;
     }
+
     // Pega o histórico do paciente e adiciona um procedimento
     PILHA* hist = PACIENTE_get_historico(paciente);
     char procedimento[101];
@@ -276,8 +262,10 @@ void adicionar_procedimento(AVL* registros, HEAP* fila){
     printf("Erro ao inserir procedimento!\n");
 }
 
+// Desfaz o último procedimento de um paciente
 void desfazer_procedimento(AVL* registros){
-    // Encontra o paciente que terá o último procedimento desfeito
+
+    // Pergunta qual o paciente
     printf("Digite o ID do paciente para desfazer um procedimento: ");
     int ID;
     if(scanf("%d", &ID) != 1){
@@ -285,14 +273,18 @@ void desfazer_procedimento(AVL* registros){
         while(getchar() != '\n');
         return;
     }
+
+    // Encontra seu registro
     PACIENTE* paciente = AVL_buscar(registros, ID);
     if(paciente == NULL){
         printf("Erro: paciente não encontrado!\n");
         return;
     }
-    // Pega o histórico do paciente
+
+    // PPega seu histórico
     PILHA* hist = PACIENTE_get_historico(paciente);
-    // Retira o último procedimento e informa qual era para o usuário
+
+    // Retira o último procedimento e o imprime
     HIST* procedimento = pilha_desempilhar(hist);
     if(procedimento == NULL)
         printf("Nenhum procedimento a ser retirado.\n");
@@ -303,9 +295,9 @@ void desfazer_procedimento(AVL* registros){
     return;
 }
 
-// MAIN  ###################################################################################
-
+// Main: função principal para 
 int main(){
+
     // Declara os registros (AVL) e fila (HEAP)
     AVL* registros = NULL;
     HEAP* fila = NULL;
@@ -314,7 +306,6 @@ int main(){
     // Cria as estruturas vazias para carregar o conteudo do save file delas ou para iniciá-las vazias caso ainda não exista save file
     registros = AVL_criar();
     fila = HEAP_criar();
-
     
     // Tenta abrir o save file
     FILE* arquivo_savefile = fopen("registros.bin", "rb");
@@ -342,7 +333,9 @@ int main(){
         printf("Nenhum arquivo de dados encontrado. Iniciando novo sistema.\n");
     }
 
-    // -------------------------------------------------------------------------------------
+    /*
+    Loop principal do menu
+    */
 
     printf("Sistema do pronto-socorro iniciado. Selecione uma das opções:\n\n");
     menu();
@@ -372,13 +365,14 @@ int main(){
         }
     }
 
-    // -------------------------------------------------------------------------------------
+    /*
+    Rotina de fechamento do programa
+    */
 
     // Chama função SAVE para salvar os dados em disco
     SAVE(registros, fila, contador);
 
-    // Limpa memória do programa
-    
+    // Limpa memória do programa 
     AVL_apagar(&registros);
     HEAP_apagar(&fila);
 

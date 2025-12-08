@@ -47,12 +47,14 @@ void AVL_apagar(AVL **arv){
     *arv = NULL;
 }
 
+// Função que retorna o tamanho de uma árvore
 int AVL_tamanho(AVL* arvore){
     if(arvore != NULL)
         return arvore->tamanho;
     else return ERRO;
 }
 
+// Função para verificar se uma árvore estpa vazia
 bool AVL_vazia(AVL* arvore){
     if(!arvore) return true;
     else return (arvore->tamanho == 0);
@@ -65,7 +67,7 @@ int AVL_altura_no(NO* no){
     return no->altura;
 }
 
-// Imprime os elementos em ordem crescente
+// Função auxiliar para imprimir uma árvore em ordem crescente
 void AVL_imprimir_nos_em_ordem(NO* raiz){
     if(raiz != NULL){
         AVL_imprimir_nos_em_ordem(raiz->esq);
@@ -74,12 +76,13 @@ void AVL_imprimir_nos_em_ordem(NO* raiz){
     }
 }
 
+// Função principal para imprimir uma árvore
 void AVL_imprimir_em_ordem(AVL* arvore){
     if(arvore != NULL)
         AVL_imprimir_nos_em_ordem(arvore->raiz);
 }
 
-// Função para transformar uma AVL em um vetor
+// Função auxiliar para transformar uma AVL em um vetor
 void AVL_salvar_nos(NO* raiz, PACIENTE** vec, int* i) {
     if (raiz != NULL) {
         AVL_salvar_nos(raiz->esq, vec, i);
@@ -89,6 +92,7 @@ void AVL_salvar_nos(NO* raiz, PACIENTE** vec, int* i) {
     }
 }
 
+// Função principal para transformar uma AVL em um vetor
 PACIENTE** AVL_salvar(AVL* arvore) {
     if (arvore != NULL) {
         int tamanho = AVL_tamanho(arvore);
@@ -113,7 +117,7 @@ NO* rotacao_direita(NO* A){
 
     // atualiza alturas
     A->altura = max(AVL_altura_no(A->esq), AVL_altura_no(A->dir)) + 1;
-    // B tem a mesma altura
+    B->altura = max(AVL_altura_no(B->esq), AVL_altura_no(B->dir)) + 1;
     return B; // nova raiz da subárvore
 }
 
@@ -125,7 +129,7 @@ NO* rotacao_esquerda(NO* A){
 
     // atualiza alturas
     A->altura = max(AVL_altura_no(A->esq), AVL_altura_no(A->dir)) + 1;
-    // B tem a mesma altura
+    B->altura = max(AVL_altura_no(B->esq), AVL_altura_no(B->dir)) + 1;
     return B; // nova raiz da subárvore
 }
 
@@ -272,6 +276,7 @@ NO* AVL_remover_aux(NO *raiz, int ID, bool remover){
             raiz->paciente = aux->paciente;
 
             // Remove o nó auxiliar
+            // Note que o item não é apagado pois isso o apagaria da raíz também (são os mesmos ponteiros)
             raiz->esq = AVL_remover_aux(raiz->esq, PACIENTE_get_ID(raiz->paciente), false);
         }
     }
@@ -305,6 +310,7 @@ NO* AVL_remover_aux(NO *raiz, int ID, bool remover){
     return raiz;
 }
 
+// Função principal da remoção
 bool AVL_remover(AVL* arv, int ID){
     // verifica se a árvore e o ID existem antes de tentar remover
     if(AVL_buscar(arv, ID) == NULL)
