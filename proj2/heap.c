@@ -128,7 +128,7 @@ void HEAP_imprimir(HEAP *fila){ //vai imprimir os elementos da heap por ordem de
     heap_aux->fim = fila->fim; 
     while(!HEAP_vazia(heap_aux)){ //vai removendo os pacientes em ordem de prioridade 
         PACIENTE *p = HEAP_remover(heap_aux); 
-        PACIENTE_imprimir_completo(p); 
+        PACIENTE_imprimir_resumido(p); 
     }
     free(heap_aux); //liberamos a memória alocada para a heap auxiliar 
 }

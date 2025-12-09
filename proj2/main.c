@@ -304,7 +304,7 @@ void desfazer_procedimento(AVL* registros){
 
 // Main: função principal para 
 int main(){
-    
+
     // Declara os registros (AVL) e fila (HEAP)
     AVL* registros = NULL;
     HEAP* fila = NULL;

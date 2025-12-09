@@ -14,7 +14,7 @@ struct historico_{
 };
 
 HIST* hist_criar(char proc[]){
-    HIST* hist = (HIST*) malloc(sizeof(HIST)); // Aloca espaço para o histórico
+    HIST* hist = (HIST*) calloc(1, sizeof(HIST)); // Aloca espaço para o histórico
     if(hist != NULL){
         strcpy(hist->procedimento, proc); // Copia o procedimento para o campo da struct
     }

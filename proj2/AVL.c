@@ -71,7 +71,7 @@ int AVL_altura_no(NO* no){
 void AVL_imprimir_nos_em_ordem(NO* raiz){
     if(raiz != NULL){
         AVL_imprimir_nos_em_ordem(raiz->esq);
-        PACIENTE_imprimir_completo(raiz->paciente);
+        PACIENTE_imprimir_resumido(raiz->paciente);
         AVL_imprimir_nos_em_ordem(raiz->dir);
     }
 }

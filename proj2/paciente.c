@@ -39,7 +39,8 @@ bool PACIENTE_apagar(PACIENTE** paciente){
     return false;
 }
 
-void PACIENTE_imprimir_resumido(PACIENTE* paciente){
+// Função para imprimir os dados de um paciente (imprime o nome completo)
+void PACIENTE_imprimir_completo(PACIENTE* paciente){
     if(paciente != NULL){
         printf ("%s (ID: %04d) || Status: ", paciente->nome, paciente->ID);
         int prioridade = paciente->prioridade;
@@ -51,10 +52,12 @@ void PACIENTE_imprimir_resumido(PACIENTE* paciente){
             case 4: printf("Pouco urgente\n"); break;
             case 5: printf("Não urgente\n"); break;
         }
+        pilha_print(paciente->historico);
     }
 }
 
-void PACIENTE_imprimir_completo(PACIENTE* paciente){
+// Função para imprimir os dados do paciente (imprime no máximo 20 caracteres do nome)
+void PACIENTE_imprimir_resumido(PACIENTE* paciente){
     if(paciente != NULL){
         int len = strlen(paciente->nome);
         
@@ -75,7 +78,6 @@ void PACIENTE_imprimir_completo(PACIENTE* paciente){
             case 5: printf("Não urgente\n"); break;
         }
         pilha_print(paciente->historico);
-
     }
 }
 

@@ -55,11 +55,8 @@ bool pilha_vazia(PILHA *pilha){
 
 bool pilha_cheia(PILHA *pilha){
     if(pilha != NULL){
-        NO* teste = (NO*)malloc(sizeof(NO)); // Verifica se há espaço na memória
-        if(pilha->tamanho != TAM_MAX && teste != NULL){ // Verifica se ultrapassou o tamanho máximo escolhido (10)
-            free(teste); // Libera o ponteiro de teste alocado
+        if(pilha->tamanho < TAM_MAX) // Verifica se ultrapassou o tamanho máximo escolhido (10)
             return false;
-        }
     }
     return true;
 }

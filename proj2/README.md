@@ -22,6 +22,8 @@ Agora o sistema possui as seguintes opções:
 9.  **Mostrar menu.**
 10. **Sair:** Salva os dados em disco e encerra.
 
+**OBS:** O menu difere um pouco da sugestão na especificação do projeto. Para maior organização escolhemos criar uma função para mostrar o menu e para maior liberdade de testes e usabilidade mantivemos as funções de adicionar e desfazer um procedimento.
+
 ---
 
 # Tipos Abstratos de Dados (TADs)
