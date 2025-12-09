@@ -39,13 +39,22 @@ bool PACIENTE_apagar(PACIENTE** paciente){
     return false;
 }
 
-void PACIENTE_imprimir(PACIENTE* paciente){
+void PACIENTE_imprimir_resumido(PACIENTE* paciente){
     if(paciente != NULL){
-        printf("%s (ID: %04d)\n", paciente->nome, paciente->ID);
+        printf ("%s (ID: %04d) || Status: ", paciente->nome, paciente->ID);
+        int prioridade = paciente->prioridade;
+        switch(prioridade){
+            case -1: printf("Não presente no hospital\n"); break;
+            case 1: printf("Emergência\n"); break;
+            case 2: printf("Muito urgente\n"); break;
+            case 3: printf("Urgente\n"); break;
+            case 4: printf("Pouco urgente\n"); break;
+            case 5: printf("Não urgente\n"); break;
+        }
     }
 }
 
-void PACIENTE_imprimir_com_status(PACIENTE* paciente){
+void PACIENTE_imprimir_completo(PACIENTE* paciente){
     if(paciente != NULL){
         int len = strlen(paciente->nome);
         
@@ -65,7 +74,6 @@ void PACIENTE_imprimir_com_status(PACIENTE* paciente){
             case 4: printf("Pouco urgente\n"); break;
             case 5: printf("Não urgente\n"); break;
         }
-
         pilha_print(paciente->historico);
 
     }

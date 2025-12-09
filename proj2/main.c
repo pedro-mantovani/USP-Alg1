@@ -180,7 +180,7 @@ void buscar(AVL* registros){
         // Imprime seus dados
         if(p != NULL){
             printf("\nPaciente encontrado: ");
-            PACIENTE_imprimir_com_status(p);
+            PACIENTE_imprimir_completo(p);
         }
         else{
             printf("\nPaciente não encontrado no registro.\n");
@@ -249,6 +249,13 @@ void adicionar_procedimento(AVL* registros, HEAP* fila){
 
     // Pega o histórico do paciente e adiciona um procedimento
     PILHA* hist = PACIENTE_get_historico(paciente);
+
+    if(pilha_cheia(hist)){
+        printf("\nErro: histórico do paciente cheio!\n");
+        printf("Remova um procedimento antigo antes de adicionar um novo.\n");
+        return;
+    }
+
     char procedimento[101];
     printf("Digite o procedimento que será adicionado: ");
     getchar();
@@ -297,7 +304,7 @@ void desfazer_procedimento(AVL* registros){
 
 // Main: função principal para 
 int main(){
-
+    
     // Declara os registros (AVL) e fila (HEAP)
     AVL* registros = NULL;
     HEAP* fila = NULL;

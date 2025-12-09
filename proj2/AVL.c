@@ -71,7 +71,7 @@ int AVL_altura_no(NO* no){
 void AVL_imprimir_nos_em_ordem(NO* raiz){
     if(raiz != NULL){
         AVL_imprimir_nos_em_ordem(raiz->esq);
-        PACIENTE_imprimir_com_status(raiz->paciente);
+        PACIENTE_imprimir_completo(raiz->paciente);
         AVL_imprimir_nos_em_ordem(raiz->dir);
     }
 }
@@ -283,28 +283,30 @@ NO* AVL_remover_aux(NO *raiz, int ID, bool remover){
 
     // Caso não tenha encontrado continua procurando
     else if(ID < PACIENTE_get_ID(raiz->paciente))
-        raiz->esq = AVL_remover_aux(raiz->esq, ID, true);
+        raiz->esq = AVL_remover_aux(raiz->esq, ID, remover);
     else
-        raiz->dir = AVL_remover_aux(raiz->dir, ID, true);
+        raiz->dir = AVL_remover_aux(raiz->dir, ID, remover);
 
-    // Arruma a altura
-    raiz->altura = max(AVL_altura_no(raiz->esq), AVL_altura_no(raiz->dir)) + 1;
+    if (raiz != NULL){
+        // Arruma a altura
+        raiz->altura = max(AVL_altura_no(raiz->esq), AVL_altura_no(raiz->dir)) + 1;
 
-    // Arruma o balanceamento
-    int fb = AVL_altura_no(raiz->esq) - AVL_altura_no(raiz->dir);
-    if(fb == -2){
-        int fb_dir = AVL_altura_no(raiz->dir->esq) - AVL_altura_no(raiz->dir->dir);
-        if(fb_dir <= 0)
-            raiz = rotacao_esquerda(raiz);
-        else
-            raiz = rotacao_direita_esquerda(raiz);
-    }
-    else if(fb == 2){
-        int fb_esq = AVL_altura_no(raiz->esq->esq) - AVL_altura_no(raiz->esq->dir);
-        if(fb_esq >= 0)
-            raiz = rotacao_direita(raiz);
-        else
-            raiz = rotacao_esquerda_direita(raiz);
+        // Arruma o balanceamento
+        int fb = AVL_altura_no(raiz->esq) - AVL_altura_no(raiz->dir);
+        if(fb == -2){
+            int fb_dir = AVL_altura_no(raiz->dir->esq) - AVL_altura_no(raiz->dir->dir);
+            if(fb_dir <= 0)
+                raiz = rotacao_esquerda(raiz);
+            else
+                raiz = rotacao_direita_esquerda(raiz);
+        }
+        else if(fb == 2){
+            int fb_esq = AVL_altura_no(raiz->esq->esq) - AVL_altura_no(raiz->esq->dir);
+            if(fb_esq >= 0)
+                raiz = rotacao_direita(raiz);
+            else
+                raiz = rotacao_esquerda_direita(raiz);
+        }
     }
 
     return raiz;

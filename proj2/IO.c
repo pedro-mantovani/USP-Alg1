@@ -7,11 +7,13 @@
 #include "AVL.h"
 #include "pilha.h"
 
+// Função para salvar os dados do sistema
 bool SAVE(AVL* avl, HEAP* heap, int contador) {
 
+    // Verifica se a avl e a heap existem
     if (avl == NULL || heap == NULL) return false;
-    // SALVANDO A AVL (REGISTROS)
-   
+
+    // cria ou abre o arquivo registros
     FILE* fp_reg = fopen("registros.bin", "wb");
     if(!fp_reg) return false;
 
@@ -33,7 +35,7 @@ bool SAVE(AVL* avl, HEAP* heap, int contador) {
         int prioridade = PACIENTE_get_prioridade(p);
         int chegada = PACIENTE_get_chegada(p);
         
-        // Prepara pra salvar o nome (garante array limpo)
+        // Prepara pra salvar o nome (garante array limpo para caso de nomes menores)
         char nome[81] = {0}; 
         const char* nome_raw = PACIENTE_get_nome(p);
         if(nome_raw != NULL) strncpy(nome, nome_raw, 80); 
@@ -44,7 +46,7 @@ bool SAVE(AVL* avl, HEAP* heap, int contador) {
         fwrite(&prioridade, sizeof(int), 1, fp_reg);
         fwrite(&chegada, sizeof(int), 1, fp_reg);
 
-        // --- MANIPULAÇÃO DO HISTÓRICO (PILHA) ---
+        // Pega o histórico
         PILHA* historico = PACIENTE_get_historico(p);
         int hist_tamanho = pilha_tamanho(historico);
 
@@ -52,8 +54,9 @@ bool SAVE(AVL* avl, HEAP* heap, int contador) {
         fwrite(&hist_tamanho, sizeof(int), 1, fp_reg);
 
         if (hist_tamanho > 0) {
-            // Cria vetor temporário para armazenar os ponteiros do histórico
-            // (Usando VLA pois o tamanho é pequeno, max 10 segundo especificações)
+
+            // Cria um vetor temporário para armazenar os ponteiros do histórico
+            // Não é necessário malloc pois o máximo é de 10 procedimentos (pequeno)
             HIST* temp_procedimentos[hist_tamanho];
 
             // 1. Desempilha tudo para o vetor temporário para poder ler
@@ -73,16 +76,13 @@ bool SAVE(AVL* avl, HEAP* heap, int contador) {
                     fwrite("", sizeof(char), 101, fp_reg); 
             }
 
-            // 3. REEMPILHA os itens de volta no paciente!
-            // Isso restaura a memória para que a main.c possa apagar corretamente depois.
+            // 3. Reempilha os itens de volta no paciente!
+            // Isso permite que a main ainda faça operações com o histórico e evita double free
             // A ordem de empilhar deve ser do Fundo para o Topo, para restaurar a ordem original.
             for(int j = hist_tamanho - 1; j >= 0; j--){
                 pilha_empilhar(historico, temp_procedimentos[j]);
             }
         }
-        
-        // CORREÇÃO CRÍTICA: Não chamamos PACIENTE_apagar aqui.
-        // A responsabilidade de limpar a memória é da AVL_apagar na main.
     }
 
     // Libera apenas o vetor auxiliar de ponteiros criado pelo AVL_salvar
@@ -90,8 +90,9 @@ bool SAVE(AVL* avl, HEAP* heap, int contador) {
     if(lista_pacientes != NULL) free(lista_pacientes); 
     fclose(fp_reg);
 
-    // SALVANDO A HEAP (FILA DE ESPERA)
+    // Salvando a Heap
 
+    // Cira o arquivo fila
     FILE* fp_fila = fopen("fila.bin", "wb");
     if(!fp_fila) return false;
 
@@ -115,7 +116,7 @@ bool SAVE(AVL* avl, HEAP* heap, int contador) {
     return true;
 }
 
-
+// Função para carregar os dados nas estruturas auxiliares
 bool LOAD(AVL** avl, HEAP** heap, int* contador){
     if(*avl == NULL || *heap == NULL) return false;
 
@@ -173,8 +174,7 @@ bool LOAD(AVL** avl, HEAP** heap, int* contador){
     fclose(fp_reg);
 
 
-    // CARREGA FILA DE ESPERA ("fila.bin")
-
+    // Carrega a fila de espera
     FILE* fp_fila = fopen("fila.bin", "rb");
     
     if(fp_fila != NULL){

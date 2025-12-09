@@ -110,11 +110,14 @@ HIST *pilha_desempilhar(PILHA *pilha){
 void pilha_print(PILHA *pilha){
     if(!pilha_vazia(pilha)){ // Verifica se a pilha não está vazia/existe
         NO* aux = pilha->topo; // Cria um vetor auxiliar para percorrer todos os elementos
+        printf("   Histórico:\n");
         while(aux != NULL){
-            hist_imprimir(aux->hist); // Iprime o elemento
+            char* procedimento = hist_get(aux->hist); // Pega o elemento
+            if(procedimento != NULL) printf("   └-> %s\n", procedimento); // Imprime o elemento
             aux = aux->anterior; // Passa para o próximo
         }
     }else{
-        printf("Esse paciente não possui histórico\n");
+        printf("   (Nenhum procedimento registrado)\n");
     }
+    printf("\n");
 }
